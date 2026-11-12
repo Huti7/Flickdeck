@@ -454,7 +454,7 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
             <section class="panel"><h3>Appearance</h3>
               <div class="switch-row"><span id="dm-l">Dark Mode</span>
                 <button type="button" role="switch" class="switch" id="dm" aria-checked="true" aria-labelledby="dm-l"><i></i></button></div></section>
-            <details class="panel" id="tm-panel"><summary>Live Catalogue and Posters</summary>
+            <details class="panel" id="tm-panel" hidden><summary>Live Catalogue and Posters</summary>
               <p>With a free TMDB key, the Library, search and Deck draw on TMDB's whole catalogue with real posters. This only works when the app runs on its own web address. Inside Claude, outside requests are blocked, so the built-in titles and drawn art stay.</p>
               <form id="tm" novalidate>
                 <label for="tm-k">TMDB API Key or Read Access Token</label>
@@ -462,8 +462,10 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
                 <div class="btn-row"><button class="btn primary" type="submit">Save Key</button><button class="btn" type="button" id="tm-x">Remove Key</button></div>
                 <p class="status" id="tm-s" role="status" aria-live="polite"></p>
               </form>
-              <p class="fine">This product uses the TMDB API but is not endorsed or certified by TMDB.</p></details>
-            <details class="panel"><summary>Live IMDb Scores</summary>
+              <div class="btn-row" style="margin-top:10px"><button class="btn" type="button" id="setup-link">Copy Setup Link</button></div>
+              <label class="vh" for="setup-out">Setup Link</label><input id="setup-out" name="setup-link" type="text" readonly hidden>
+              <p class="fine">Open the setup link once on another device and it saves your keys there. Keep the link to yourself, because it contains your keys.</p></details>
+            <details class="panel" id="om-panel" hidden><summary>Live IMDb Scores</summary>
               <p>TMDB does not carry IMDb scores. With a free OMDb key (omdbapi.com, 1,000 lookups a day), the card on top of the Deck and any title you open show the current IMDb score. Without it, live titles show TMDB's own score, labelled TMDB.</p>
               <form id="om" novalidate>
                 <label for="om-k">OMDb API Key</label>
@@ -492,7 +494,7 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
             <section class="panel"><h3>Start Over</h3>
               <p>Erases this profile's ratings, Watchlist, taste and added titles.</p>
               <div class="btn-row" style="margin-top:12px"><button type="button" class="btn danger" id="reset">Reset This Profile</button></div></section>
-            <p class="meta fine" style="margin-top:14px">The IMDb Top 250 list and its scores are a mid-2022 snapshot, so newer films are missing from it. Other built-in IMDb scores were entered by hand and can be out by 0.1.</p>
+            <p class="meta fine" style="margin-top:14px">The IMDb Top 250 list and its scores are a mid-2022 snapshot, so newer films are missing from it. Other built-in IMDb scores were entered by hand and can be out by 0.1. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
           </div>
         </div>
       </div>
@@ -899,6 +901,17 @@ const BASE=RAW.split('\n').map(l=>{const[id,t,y,k,g,r,fm,top,h]=l.split('|');ret
 const DEF={v:2,onboarded:false,likes:{},mode:'solo',kind:'all',theme:'dark',ratings:{},seen:{},watch:{},skipped:{},meta:{},custom:[],libSrc:'',libSort:'imdb',libSortLive:'pop',libGroup:'genre',wlSort:'added',ts:0};
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const clone=o=>JSON.parse(JSON.stringify(o));
+/* one-time setup link: #setup=<code> saves the owner's keys on this device, then removes itself from the address bar */
+let setupMsg='';
+(()=>{
+  const h=location.hash;if(!h.startsWith('#setup='))return;
+  try{
+    const j=JSON.parse(decodeURIComponent(escape(atob(h.slice(7).replace(/-/g,'+').replace(/_/g,'/')))));
+    if(j.t)LS.set('fd.tmdb',String(j.t));if(j.o)LS.set('fd.omdb',String(j.o));
+    setupMsg='Keys saved on this device';
+  }catch(e){setupMsg='That setup link is damaged. Copy it again.'}
+  try{history.replaceState(null,'',location.pathname+location.search+'#deck')}catch(e){location.hash='#deck'}
+})();
 const jget=(k,d)=>{try{const v=JSON.parse(LS.get(k)||'null');return v===null?d:v}catch(e){return d}};
 function hydrate(o){
   const s=Object.assign(clone(DEF),o||{});
@@ -1017,7 +1030,7 @@ const Live={
     if(this.key.length>60)opt.headers={Authorization:'Bearer '+this.key};else u.searchParams.set('api_key',this.key);
     return fetch(u,opt);
   },
-  async json(path,params){const r=await this.req(path,params||{});if(!r.ok){const e=new Error('TMDB '+r.status);e.status=r.status;throw e}return r.json()},
+  async json(path,params){let r;try{r=await this.req(path,params||{})}catch(e){this.dead=true;throw e}if(!r.ok){const e=new Error('TMDB '+r.status);e.status=r.status;throw e}return r.json()},
   scan(root){
     if(!this.key)return;
     if(!this.io&&'IntersectionObserver'in window)this.io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){this.io.unobserve(e.target);this.want(e.target)}},{rootMargin:'240px'});
@@ -1436,6 +1449,7 @@ async function loadInto(box){
   let res=null,err=false;
   try{res=await liveList(specOf(box),page)}catch(e){err=true}
   if(gen!==libGen||!box.isConnected)return;
+  if(err&&!Live.on){renderLibrary();return}
   delete box.dataset.busy;$$('.mini.sk',box).forEach(e=>e.remove());
   if(err){
     const msg='<p class="note">This didn’t load. Check your connection, then try again.</p>';
@@ -1592,6 +1606,17 @@ twoStep($('#delprofile'),'Delete This Profile','Tap Again to Delete for Good',()
   P=P.filter(p=>p.id!==id);LS.del(sKey(id));saveProfiles();signOut();toast(`${name} was deleted`);
 });
 $('#signout').onclick=()=>signOut();
+/* key settings stay out of sight; five quick taps on the You heading show or hide them */
+const keyPanels=[$('#tm-panel'),$('#om-panel')];let taps=0,tapT;
+$('#h-you').addEventListener('click',()=>{clearTimeout(tapT);tapT=setTimeout(()=>taps=0,1500);if(++taps>=5){taps=0;const show=keyPanels[0].hidden;keyPanels.forEach(p=>{p.hidden=!show;p.open=show})}});
+$('#setup-link').onclick=async()=>{
+  const t=LS.get('fd.tmdb')||'',o=LS.get('fd.omdb')||'',st=$('#tm-s'),out=$('#setup-out');
+  if(!t&&!o){st.textContent='Save a key on this device first.';return}
+  const link=location.origin+location.pathname+'#setup='+btoa(unescape(encodeURIComponent(JSON.stringify({t,o})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  try{await navigator.clipboard.writeText(link);st.textContent='Setup link copied. Open it once on each device.'}
+  catch(e){out.hidden=false;out.value=link;out.focus();out.select();st.textContent='Copy the link from the box below.'}
+};
+addEventListener('online',()=>{if(Live.dead){Live.dead=false;Live.jobs={};deckDirty=true}});
 
 /* ---------- detail sheet ---------- */
 const sheet=$('#sheet');let sheetId=null,sheetDirty=false;
@@ -1756,7 +1781,7 @@ try{
   const u=c.toDataURL('image/png');
   for(const rel of['apple-touch-icon','icon']){const l=document.createElement('link');l.rel=rel;l.href=u;document.head.appendChild(l)}
 }catch(e){}
-start();cloudInit();
+start();cloudInit();if(setupMsg)toast(setupMsg);
 })();
 </script>
 </body>
