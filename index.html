@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-mode="dark">
+<html lang="en" data-skin="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -11,8 +11,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://image.tmdb.org">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script>try{if(JSON.parse(localStorage.getItem('fd.state')||'{}').theme==='light')document.documentElement.dataset.mode='light'}catch(e){}</script>
+<script>try{if(localStorage.getItem('fd.theme')==='light')document.documentElement.dataset.skin='light'}catch(e){}</script>
 <style>
 :root{
   /* Layout: a one-screen app. Marquee header, a swipeable poster stack as the hero,
@@ -26,7 +27,7 @@
   --f-body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   color-scheme:light;
 }
-:root[data-mode="dark"]{
+:root[data-skin="dark"]{
   --bg:#100d1a; --surface:#1a1628; --surface-2:#262039; --line:#383050;
   --ink:#f4efe6; --muted:#aaa2c3;
   --accent-text:#ffb52e; --hot:#ff5c7a; --good:#49d6a4;
@@ -54,8 +55,8 @@ svg.ic.fill{fill:currentColor;stroke:none}
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"head" "main" "nav"}
 header{grid-area:head;display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:calc(10px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 6px max(16px,env(safe-area-inset-left))}
-.brand h1{font:400 30px/1 var(--f-display);letter-spacing:.045em;text-transform:uppercase}
-.brand h1 span{color:var(--accent-text)}
+.brand h1,.wordmark{font:400 30px/1 var(--f-display);letter-spacing:.045em;text-transform:uppercase}
+.brand h1 span,.wordmark span{color:var(--accent-text)}
 .bulbs{display:flex;gap:5px;margin-top:5px}
 .bulbs i{width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.4}
 .bulbs.run i{animation:bulb .9s ease-in-out calc(var(--i)*70ms) 3}
@@ -89,8 +90,6 @@ main{grid-area:main;min-height:0;position:relative}
   .badge{position:static}
   header{justify-content:flex-start;gap:20px}
 }
-.rise>*{animation:rise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*45ms)}
-@keyframes rise{from{opacity:0;transform:translateY(14px)}}
 
 /* ---------- shared bits ---------- */
 .h2{font:400 26px/1.05 var(--f-display);letter-spacing:.03em;text-transform:uppercase}
@@ -125,6 +124,7 @@ main{grid-area:main;min-height:0;position:relative}
 .art-kind{position:absolute;z-index:1;left:8%;top:6%;color:#fff;font-weight:800;font-size:clamp(8px,5.2cqw,13px);letter-spacing:.14em;text-transform:uppercase;opacity:.9}
 .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s;z-index:2}
 .art.has-img img{opacity:1}
+.art.has-img .art-title,.art.has-img .art-kind,.art.has-img::after{opacity:0}
 
 /* ---------- deck ---------- */
 #v-deck.on{display:flex;flex-direction:column;overflow:hidden;padding-bottom:6px}
@@ -152,9 +152,10 @@ main{grid-area:main;min-height:0;position:relative}
 .cap-m{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cap-w{font-size:13px;line-height:1.3;font-weight:700;color:var(--accent-text);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .imdb-chip{position:absolute;z-index:3;top:12px;right:12px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:13px;padding:4px 9px;border-radius:999px;font-variant-numeric:tabular-nums;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.imdb-chip:empty{display:none}
 .back{transform:rotateY(180deg);padding:22px 20px;display:flex;flex-direction:column;gap:12px}
 .back h3{font:400 30px/1 var(--f-display);font-size:clamp(22px,7cqw,34px);letter-spacing:.02em;text-transform:uppercase;overflow-wrap:break-word}
-.back .hook{font-size:17px;line-height:1.4}
+.back .hook{font-size:16px;line-height:1.4;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden}
 .back .big{margin-top:auto;display:flex;align-items:baseline;gap:8px}
 .back .big b{font:400 54px/1 var(--f-display);color:var(--accent-text);font-variant-numeric:tabular-nums}
 .back .hint{font-size:12.5px;color:var(--muted)}
@@ -162,6 +163,7 @@ main{grid-area:main;min-height:0;position:relative}
 .tag{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface-2)}
 .tag.love{background:var(--accent);color:var(--accent-ink)}
 .tag.nope{text-decoration:line-through;color:var(--muted)}
+.tag.top{background:none;border:1.5px solid var(--accent-text);color:var(--accent-text)}
 .stamp{position:absolute;z-index:4;top:16%;font:400 30px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;padding:8px 12px 6px;border:4px solid currentColor;border-radius:12px;background:rgba(10,6,18,.55);opacity:0;pointer-events:none}
 .s-right{left:8%;color:var(--accent);transform:rotate(-14deg);opacity:var(--r,0)}
 .s-left{right:8%;color:#ff6f8b;transform:rotate(14deg);opacity:var(--l,0)}
@@ -189,8 +191,9 @@ main{grid-area:main;min-height:0;position:relative}
 .field svg{position:absolute;left:12px;top:50%;margin-top:-10px;width:20px;height:20px;color:var(--muted);pointer-events:none}
 input[type=search],input[type=text],select{height:46px;border-radius:14px;border:1.5px solid var(--line);background-color:var(--surface);color:var(--ink);padding:0 14px;font-size:16px;width:100%;min-width:0}
 input[type=search]{padding-left:40px;-webkit-appearance:none;appearance:none}
-select{width:auto;padding-right:10px;font-weight:700}
+select{width:auto;max-width:100%;padding-right:10px;font-weight:700}
 input:hover,select:hover{border-color:var(--muted)}
+input.pin{-webkit-text-security:disc;letter-spacing:.3em;font-weight:800}
 .shelf{padding-top:16px}
 .shelf-h{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
 .shelf-h h3{font:400 22px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
@@ -211,8 +214,16 @@ input:hover,select:hover{border-color:var(--muted)}
 .mini-m .mine{color:var(--accent-text)}
 .mini .flag{position:absolute;z-index:3;top:-3px;right:9px;color:var(--accent);filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 .mini .flag svg{width:22px;height:26px}
+.rankno{position:absolute;z-index:3;left:6px;top:6px;min-width:26px;height:26px;padding:0 6px;border-radius:8px;background:rgba(10,6,18,.78);color:#fff;font:400 15px/26px var(--f-display);text-align:center;font-variant-numeric:tabular-nums}
 .mini.seen .art{filter:saturate(.45) brightness(.8)}
+.mini.sk .art{animation:sk 1.2s ease-in-out infinite alternate}
+.mini.sk .art::after{display:none}
+@keyframes sk{to{opacity:.45}}
+.mini.more{flex:0 0 96px!important;align-self:stretch;min-height:120px;border:1.5px dashed var(--line);border-radius:12px;display:grid;place-items:center;font-weight:800;color:var(--muted)}
+.mini.more:hover{color:var(--ink);border-color:var(--muted)}
+.more-row{display:flex;justify-content:center;padding:18px 0 4px}
 .divider{margin:26px 0 0;padding-top:14px;border-top:1px dashed var(--line);color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.note{margin-top:10px;font-size:13px;color:var(--muted)}
 
 /* ---------- lists ---------- */
 .list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
@@ -273,6 +284,9 @@ fieldset{border:0;padding:0;margin:0;min-width:0}
 .err{color:var(--hot);font-size:13.5px;font-weight:700}
 .fine{font-size:12.5px!important}
 .status{font-size:14px;font-weight:700;min-height:1.4em}
+.who{display:flex;align-items:center;gap:12px;margin-top:10px}
+.who b{font-size:18px}
+.av{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:400 24px/1 var(--f-display);color:#1b1530;text-transform:uppercase}
 
 /* ---------- sheet ---------- */
 dialog#sheet{border:0;padding:0;background:var(--surface);color:var(--ink);width:min(100%,560px);max-width:100%;max-height:min(92%,780px);margin:auto auto 0;border-radius:26px 26px 0 0;box-shadow:var(--shadow);overscroll-behavior:contain;overflow-y:auto}
@@ -300,11 +314,12 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
 .pip.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .pip[aria-pressed="true"]{transform:translateY(-5px) scale(1.08)}
 
-/* ---------- onboarding ---------- */
-#onboard{position:fixed;inset:0;z-index:20;overflow-y:auto;display:grid;place-items:center;
+/* ---------- sign-in and onboarding ---------- */
+.cover{position:fixed;inset:0;z-index:20;overflow-y:auto;display:grid;place-items:center;
   background:radial-gradient(120% 55% at 50% -12%,var(--glow),transparent 62%),var(--bg);
   padding:calc(24px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
-.ob{max-width:620px;display:grid;gap:16px}
+#gate{z-index:21}
+.ob{width:100%;max-width:620px;display:grid;gap:16px}
 .ob .eyebrow{font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text)}
 .ob h2{font:400 46px/.98 var(--f-display);font-size:clamp(38px,11vw,64px);letter-spacing:.02em;text-transform:uppercase}
 .ob p{color:var(--muted);max-width:52ch}
@@ -315,6 +330,14 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend svg{width:16px;height:16px}
 .legend .l1{color:var(--accent-text)} .legend .l2{color:var(--hot)}
+.gate{max-width:460px}
+.gate form{margin-top:0}
+.people{display:grid;gap:10px}
+.person{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:10px 14px;font-weight:800;font-size:18px;animation:chipin .5s cubic-bezier(.3,1.5,.4,1) backwards;animation-delay:calc(var(--i)*70ms + 100ms);transition:transform .15s,border-color .2s}
+.person:hover{border-color:var(--muted)}
+.person:active{transform:scale(.97)}
+.person span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.person svg{color:var(--muted)}
 
 /* ---------- toast ---------- */
 #toast{position:fixed;z-index:40;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translate(-50%,-24px);opacity:0;pointer-events:none;
@@ -356,7 +379,7 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
         <div class="pillrow" role="group" aria-label="Who's Watching" id="modes"></div>
         <div class="deck-sub">
           <div class="seg" role="group" aria-label="Films or Series" data-kinds></div>
-          <span class="meta" id="deck-meta"></span>
+          <span class="meta" id="deck-meta" role="status"></span>
         </div>
       </div>
       <div class="stack-wrap"><div class="stack" id="stack"></div></div>
@@ -383,13 +406,12 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
             <div class="seg" role="group" aria-label="Films or Series" data-kinds></div>
           </div>
           <div class="tools-row">
+            <label class="vh" for="lib-src">Collection</label>
+            <select id="lib-src" name="collection"></select>
             <label class="vh" for="lib-group">Arrange</label>
             <select id="lib-group" name="group"><option value="genre">By Genre</option><option value="all">All Together</option></select>
             <label class="vh" for="lib-sort">Sort By</label>
-            <select id="lib-sort" name="sort">
-              <option value="imdb">IMDb Rating</option><option value="mine">My Rating</option>
-              <option value="new">Newest First</option><option value="old">Oldest First</option><option value="az">Title A–Z</option>
-            </select>
+            <select id="lib-sort" name="sort"></select>
             <span class="meta" id="lib-count"></span>
           </div>
         </div>
@@ -404,7 +426,7 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
           <h2 class="h2" id="h-wl">Watchlist</h2>
           <div class="tools-row">
             <label class="vh" for="wl-sort">Sort Watchlist</label>
-            <select id="wl-sort" name="wl-sort"><option value="added">Recently Added</option><option value="imdb">IMDb Rating</option><option value="az">Title A–Z</option></select>
+            <select id="wl-sort" name="wl-sort"><option value="added">Recently Added</option><option value="imdb">Public Score</option><option value="az">Title A–Z</option></select>
             <button type="button" class="btn primary" id="pick"><span data-ic="dice"></span>Pick for Me</button>
           </div>
         </div>
@@ -419,6 +441,10 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
         <div id="you-stats"></div>
         <div class="cols">
           <div>
+            <section class="panel"><h3>Profile</h3>
+              <div class="who" id="who"></div>
+              <div class="btn-row" style="margin-top:12px"><button type="button" class="btn" id="signout">Sign Out</button><button type="button" class="btn danger" id="delprofile">Delete This Profile</button></div>
+              <p class="fine">Profiles and PINs are kept on this device only. A PIN keeps other people on this device out of your list; it is not strong security.</p></section>
             <section class="panel"><h3>Your Ratings</h3><div id="you-rated"></div></section>
           </div>
           <div>
@@ -428,7 +454,24 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
             <section class="panel"><h3>Appearance</h3>
               <div class="switch-row"><span id="dm-l">Dark Mode</span>
                 <button type="button" role="switch" class="switch" id="dm" aria-checked="true" aria-labelledby="dm-l"><i></i></button></div></section>
-            <details class="panel"><summary>Add a Title</summary>
+            <details class="panel" id="tm-panel"><summary>Live Catalogue and Posters</summary>
+              <p>With a free TMDB key, the Library, search and Deck draw on TMDB's whole catalogue with real posters. This only works when the app runs on its own web address. Inside Claude, outside requests are blocked, so the built-in titles and drawn art stay.</p>
+              <form id="tm" novalidate>
+                <label for="tm-k">TMDB API Key or Read Access Token</label>
+                <input id="tm-k" name="tmdb-key" type="text" autocomplete="off" spellcheck="false" autocapitalize="off" data-1p-ignore data-lpignore="true" placeholder="Paste your key…">
+                <div class="btn-row"><button class="btn primary" type="submit">Save Key</button><button class="btn" type="button" id="tm-x">Remove Key</button></div>
+                <p class="status" id="tm-s" role="status" aria-live="polite"></p>
+              </form>
+              <p class="fine">This product uses the TMDB API but is not endorsed or certified by TMDB.</p></details>
+            <details class="panel"><summary>Live IMDb Scores</summary>
+              <p>TMDB does not carry IMDb scores. With a free OMDb key (omdbapi.com, 1,000 lookups a day), the card on top of the Deck and any title you open show the current IMDb score. Without it, live titles show TMDB's own score, labelled TMDB.</p>
+              <form id="om" novalidate>
+                <label for="om-k">OMDb API Key</label>
+                <input id="om-k" name="omdb-key" type="text" autocomplete="off" spellcheck="false" autocapitalize="off" data-1p-ignore data-lpignore="true" placeholder="Paste your key…">
+                <div class="btn-row"><button class="btn primary" type="submit">Save Key</button><button class="btn" type="button" id="om-x">Remove Key</button></div>
+                <p class="status" id="om-s" role="status" aria-live="polite"></p>
+              </form></details>
+            <details class="panel"><summary>Add a Title by Hand</summary>
               <form id="add" novalidate>
                 <label for="a-t">Title</label>
                 <input id="a-t" name="title" type="text" autocomplete="off" maxlength="90" placeholder="The Third Man…">
@@ -446,19 +489,10 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
                 <label class="ck"><input type="checkbox" name="family" id="a-f"><span>Fine for Family Night</span></label>
                 <button class="btn primary" type="submit">Add Title</button>
               </form></details>
-            <details class="panel"><summary>Real Posters</summary>
-              <p>Cards use drawn poster art by default. Real posters load from TMDB once this app runs on its own web address and you paste a free TMDB API key here. Inside Claude, outside images are blocked, so the drawn art stays.</p>
-              <form id="tm" novalidate>
-                <label for="tm-k">TMDB API Key</label>
-                <input id="tm-k" name="tmdb-key" type="text" autocomplete="off" spellcheck="false" autocapitalize="off" data-1p-ignore data-lpignore="true" placeholder="Paste your key…">
-                <div class="btn-row"><button class="btn primary" type="submit">Save Key</button><button class="btn" type="button" id="tm-x">Remove Key</button></div>
-                <p class="status" id="tm-s" role="status" aria-live="polite"></p>
-              </form>
-              <p class="fine">This product uses the TMDB API but is not endorsed or certified by TMDB.</p></details>
             <section class="panel"><h3>Start Over</h3>
-              <p>Erases your ratings, Watchlist, taste and added titles on this device.</p>
-              <div class="btn-row" style="margin-top:12px"><button type="button" class="btn danger" id="reset">Reset Everything</button></div></section>
-            <p class="meta fine" style="margin-top:14px">IMDb scores in the built-in catalogue were entered by hand and can be out by 0.1.</p>
+              <p>Erases this profile's ratings, Watchlist, taste and added titles.</p>
+              <div class="btn-row" style="margin-top:12px"><button type="button" class="btn danger" id="reset">Reset This Profile</button></div></section>
+            <p class="meta fine" style="margin-top:14px">The IMDb Top 250 list and its scores are a mid-2022 snapshot, so newer films are missing from it. Other built-in IMDb scores were entered by hand and can be out by 0.1.</p>
           </div>
         </div>
       </div>
@@ -466,7 +500,9 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1) both}
   </main>
 </div>
 
-<section id="onboard" aria-labelledby="ob-h" hidden>
+<section id="gate" class="cover" aria-labelledby="gate-h" hidden><div class="ob gate" id="gate-in"></div></section>
+
+<section id="onboard" class="cover" aria-labelledby="ob-h" hidden>
   <div class="ob">
     <p class="eyebrow">Before the First Card</p>
     <h2 id="ob-h">What Do You Actually Like?</h2>
@@ -504,191 +540,394 @@ const IC={
  ban:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
  dice:'<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
- trash:'<path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13"/>'
+ trash:'<path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>'
 };
 const ic=(n,cls='')=>`<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
 $$('[data-ic]').forEach(e=>e.insertAdjacentHTML('afterbegin',ic(e.dataset.ic)));
 $$('[data-ic-inline]').forEach(e=>e.insertAdjacentHTML('afterbegin',ic(e.dataset.icInline)));
 
 /* ---------- catalogue ---------- */
-const G={Ac:'Action',Ad:'Adventure',An:'Animation',Co:'Comedy',Cr:'Crime',Do:'Documentary',Dr:'Drama',Fa:'Family',Fn:'Fantasy',Ho:'Horror',Mu:'Music',My:'Mystery',Ro:'Romance',Sf:'Sci-Fi',Th:'Thriller',Wa:'War',We:'Western'};
-const PAL={Ac:['#ff6a3d','#7a1023'],Ad:['#f2a33a','#16615e'],An:['#ff7ac3','#5b3df5'],Co:['#ffd23f','#f0660a'],Cr:['#4a5072','#0d0f1a'],Do:['#2fa87f','#0c3540'],Dr:['#c44569','#2c1338'],Fa:['#5ed4f4','#2b62d8'],Fn:['#8468ff','#0f2358'],Ho:['#b3122b','#0b0508'],Mu:['#f72585','#3a0ca3'],My:['#5a7699','#0f1726'],Ro:['#ff8fa3','#b0123f'],Sf:['#22c7e6','#1b1464'],Th:['#3a3d4a','#3b0d12'],Wa:['#8f8c5c','#25281a'],We:['#f6ae2d','#9c3a10']};
-const RAW=`The Shawshank Redemption|1994|m|Dr,Cr|9.3|0|Two inmates, decades of patience, and one very long game.
-The Godfather|1972|m|Cr,Dr|9.2|0|A reluctant son inherits the family business and its sins.
-The Dark Knight|2008|m|Ac,Cr,Th|9.0|0|Gotham's guardian meets a villain who only wants chaos.
-12 Angry Men|1957|m|Dr,Cr|9.0|1|One juror, one hot room, and eleven minds to change.
-Schindler's List|1993|m|Dr,Wa|9.0|0|A profiteer turns his factory into a lifeline.
-The Lord of the Rings: The Return of the King|2003|m|Fn,Ad|9.0|1|The last march to Mordor, with everything on the line.
-The Lord of the Rings: The Fellowship of the Ring|2001|m|Fn,Ad|8.9|1|A small hobbit carries a very big problem out of the Shire.
-Pulp Fiction|1994|m|Cr,Dr|8.9|0|Hitmen, a boxer and a briefcase, shuffled out of order.
-Forrest Gump|1994|m|Dr,Ro,Co|8.8|0|A simple man keeps wandering into history.
-Fight Club|1999|m|Dr,Th|8.8|0|An insomniac finds a cure that gets badly out of hand.
-Inception|2010|m|Sf,Ac,Th|8.8|1|A heist crew breaks into dreams, layer under layer.
-The Good, the Bad and the Ugly|1966|m|We,Ad|8.8|0|Three gunmen, one buried fortune, zero trust.
-The Matrix|1999|m|Sf,Ac|8.7|0|A hacker learns his world is a program, then fights it.
-Goodfellas|1990|m|Cr,Dr|8.7|0|The rise and unravelling of a mob life, told at full speed.
-Interstellar|2014|m|Sf,Dr,Ad|8.7|1|A father leaves Earth to find humanity a new home.
-Se7en|1995|m|Cr,My,Th|8.6|0|Two detectives chase a killer working through the deadly sins.
-The Silence of the Lambs|1991|m|Th,Cr,Ho|8.6|0|A trainee agent trades secrets with a brilliant monster.
-Spirited Away|2001|m|An,Fn,Fa|8.6|1|A girl takes a job in a bathhouse for spirits to save her parents.
-Saving Private Ryan|1998|m|Wa,Dr|8.6|0|A squad crosses occupied France to bring one soldier home.
-City of God|2002|m|Cr,Dr|8.6|0|Two boys grow up in a Rio favela and choose different paths.
-The Green Mile|1999|m|Dr,Fn,Cr|8.6|0|A death row guard meets a prisoner with an impossible gift.
-Parasite|2019|m|Th,Dr,Co|8.5|0|A poor family talks its way into a rich household.
-Gladiator|2000|m|Ac,Dr,Ad|8.5|0|A betrayed general fights his way back through the arena.
-The Lion King|1994|m|An,Fa,Ad,Mu|8.5|1|A runaway cub has to grow up and take back his home.
-Whiplash|2014|m|Dr,Mu|8.5|0|A young drummer and a teacher who pushes far past the limit.
-The Prestige|2006|m|My,Th,Dr|8.5|0|Two rival magicians keep raising the price of the trick.
-The Departed|2006|m|Cr,Th|8.5|0|A cop inside the mob and a mobster inside the police hunt each other.
-Back to the Future|1985|m|Sf,Co,Ad|8.5|1|A teenager lands in 1955 and nearly erases himself.
-Alien|1979|m|Ho,Sf|8.5|0|A cargo crew answers a signal and brings something aboard.
-The Usual Suspects|1995|m|Cr,My,Th|8.5|0|Five crooks, one line-up, and a name nobody dares to say.
-Rear Window|1954|m|My,Th|8.5|1|A photographer stuck at home starts watching the neighbours too closely.
-Casablanca|1942|m|Ro,Dr,Wa|8.5|1|An old flame walks into the wrong bar in wartime Morocco.
-Django Unchained|2012|m|We,Dr|8.5|0|A freed man and a bounty hunter ride out to rescue his wife.
-Dune: Part Two|2024|m|Sf,Ad,Ac|8.5|1|Paul rides with the Fremen toward a war he may not control.
-Senna|2010|m|Do|8.5|1|The racing life of Ayrton Senna, told through archive footage.
-Spider-Man: Into the Spider-Verse|2018|m|An,Ac,Ad|8.4|1|A Brooklyn kid meets a crowd of other Spider-heroes.
-Coco|2017|m|An,Fa,Mu|8.4|1|A boy who loves music crosses into the Land of the Dead.
-WALL·E|2008|m|An,Sf,Fa|8.4|1|A lonely cleanup robot follows a visitor into space.
-Your Name.|2016|m|An,Ro,Fn|8.4|1|Two strangers keep waking up in each other's lives.
-Avengers: Endgame|2019|m|Ac,Sf,Ad|8.4|1|The surviving heroes try one last plan to undo a loss.
-The Shining|1980|m|Ho,Dr|8.4|0|A winter job at an empty hotel slowly breaks a family.
-Inglourious Basterds|2009|m|Wa,Dr,Ad|8.4|0|Several plots to end the war collide in one Paris cinema.
-Raiders of the Lost Ark|1981|m|Ad,Ac|8.4|1|An archaeologist races to reach a lost relic first.
-Memento|2000|m|My,Th|8.4|0|A man with no short-term memory hunts a killer backwards.
-Joker|2019|m|Cr,Dr,Th|8.3|0|A failed comedian slides toward something darker.
-Oldboy|2003|m|Th,My,Ac|8.3|0|Locked up for 15 years, then freed with five days to learn why.
-Good Will Hunting|1997|m|Dr,Ro|8.3|0|A janitor with a gift for maths meets a therapist who won't quit.
-Toy Story|1995|m|An,Fa,Co|8.3|1|A cowboy doll feels replaced when a space ranger arrives.
-Eternal Sunshine of the Spotless Mind|2004|m|Ro,Sf,Dr|8.3|0|A couple erase each other from memory, then have second thoughts.
-Up|2009|m|An,Fa,Ad|8.3|1|An old man floats his house to South America with a stowaway.
-Heat|1995|m|Cr,Ac,Th|8.3|0|A master thief and an obsessed detective circle each other.
-Oppenheimer|2023|m|Dr|8.3|0|The physicist who built the bomb lives with what follows.
-Princess Mononoke|1997|m|An,Fn,Ad|8.3|0|A cursed prince walks into a war between a forest and a town.
-Amélie|2001|m|Ro,Co|8.3|0|A shy Parisian waitress quietly fixes other people's lives.
-A Separation|2011|m|Dr|8.3|0|A Tehran couple's split pulls two families into a dispute.
-Jurassic Park|1993|m|Sf,Ad|8.2|1|A dinosaur theme park fails its safety inspection.
-The Truman Show|1998|m|Co,Dr|8.2|1|A man starts to suspect his whole town is a set.
-Shutter Island|2010|m|My,Th|8.2|0|A marshal searches an island asylum for a missing patient.
-Prisoners|2013|m|Th,Cr,My|8.2|0|When his daughter vanishes, a father takes over the search.
-Pan's Labyrinth|2006|m|Fn,Wa,Dr|8.2|0|A girl finds a dark fairy tale next to a real war.
-No Country for Old Men|2007|m|Cr,Th,We|8.2|0|A hunter takes a bag of cash and a killer follows.
-1917|2019|m|Wa,Dr|8.2|0|Two soldiers cross enemy ground to stop an attack.
-Top Gun: Maverick|2022|m|Ac,Dr|8.2|1|A veteran pilot trains a new class for one impossible run.
-Die Hard|1988|m|Ac,Th|8.2|0|One off-duty cop, one tower, a building full of thieves.
-The Wolf of Wall Street|2013|m|Co,Cr,Dr|8.2|0|A stockbroker gets rich fast and falls faster.
-Inside Out|2015|m|An,Fa,Co|8.1|1|Five emotions try to steer an eleven-year-old through a move.
-Mad Max: Fury Road|2015|m|Ac,Sf,Ad|8.1|0|One long desert chase, there and back again.
-The Grand Budapest Hotel|2014|m|Co,Ad|8.1|0|A concierge and his lobby boy get tangled in a stolen painting.
-Gone Girl|2014|m|Th,My,Dr|8.1|0|A wife disappears and her husband's story stops adding up.
-The Big Lebowski|1998|m|Co,Cr|8.1|0|A laid-back bowler gets mistaken for a millionaire.
-Before Sunrise|1995|m|Ro,Dr|8.1|0|Two strangers get off a train and talk through one night in Vienna.
-How to Train Your Dragon|2010|m|An,Fa,Ad,Fn|8.1|1|A Viking boy befriends the dragon he was meant to hunt.
-My Neighbor Totoro|1988|m|An,Fa,Fn|8.1|1|Two sisters meet the gentle spirits living near their new house.
-Pirates of the Caribbean: The Curse of the Black Pearl|2003|m|Ad,Fn,Ac|8.1|1|A slippery pirate and a blacksmith chase a cursed ship.
-Free Solo|2018|m|Do,Ad|8.1|0|A climber goes up El Capitan with no rope.
-My Octopus Teacher|2020|m|Do|8.1|1|A diver visits the same octopus every day for a year.
-Ratatouille|2007|m|An,Fa,Co|8.1|1|A rat with a great palate cooks in a Paris kitchen.
-Ford v Ferrari|2019|m|Dr,Ac|8.1|1|A designer and a driver build a car to beat Ferrari at Le Mans.
-Catch Me If You Can|2002|m|Cr,Dr,Co|8.1|1|A teenage con man stays one step ahead of the FBI.
-Spotlight|2015|m|Dr,Cr|8.1|0|A newsroom team digs into a story the city buried.
-Hacksaw Ridge|2016|m|Wa,Dr|8.1|0|A medic goes into battle and refuses to carry a weapon.
-Blade Runner 2049|2017|m|Sf,My,Dr|8.0|0|A replicant hunter digs up a secret that could upend everything.
-The Martian|2015|m|Sf,Ad,Co|8.0|1|A stranded astronaut farms potatoes and waits for a ride.
-La La Land|2016|m|Ro,Mu,Dr|8.0|1|A pianist and an actress fall in love while chasing their careers.
-Groundhog Day|1993|m|Co,Ro,Fn|8.0|1|A grumpy weatherman relives the same day until he gets it right.
-The Incredibles|2004|m|An,Fa,Ac|8.0|1|A retired superhero family gets pulled back to work.
-The Princess Bride|1987|m|Fa,Fn,Ad,Ro,Co|8.0|1|A farm boy turned pirate comes back for his true love.
-Knives Out|2019|m|My,Co,Cr|7.9|1|A novelist dies and every relative has a motive.
-Arrival|2016|m|Sf,Dr,My|7.9|1|A linguist is asked to talk to visitors from elsewhere.
-Harry Potter and the Prisoner of Azkaban|2004|m|Fn,Fa,Ad|7.9|1|Harry's third year brings an escaped prisoner and old secrets.
-Bohemian Rhapsody|2018|m|Mu,Dr|7.9|1|Freddie Mercury and Queen, from pub gigs to Live Aid.
-Everything Everywhere All at Once|2022|m|Sf,Co,Ac|7.8|0|A laundromat owner is pulled across the multiverse during a tax audit.
-The Social Network|2010|m|Dr|7.8|1|A dorm-room site becomes a giant and costs its founder his friends.
-Get Out|2017|m|Ho,My,Th|7.8|0|A weekend with his girlfriend's parents turns deeply wrong.
-Paddington 2|2017|m|Fa,Co,Ad|7.8|1|A polite bear is framed for theft and wins over a prison.
-Pride & Prejudice|2005|m|Ro,Dr|7.8|1|Elizabeth Bennet and Mr Darcy misjudge each other, slowly.
-The Notebook|2004|m|Ro,Dr|7.8|0|A summer romance that neither class nor time can end.
-About Time|2013|m|Ro,Co,Fn|7.8|0|A young man who can redo moments learns what to leave alone.
-Dunkirk|2017|m|Wa,Th,Ac|7.8|1|Land, sea and air race to get an army off a beach.
-The Hangover|2009|m|Co|7.7|0|Three friends wake up in Vegas missing the groom.
-When Harry Met Sally...|1989|m|Ro,Co|7.7|0|Two friends spend years arguing about whether they can stay friends.
-Home Alone|1990|m|Fa,Co|7.7|1|An eight-year-old defends his house from two burglars.
-Zodiac|2007|m|Cr,My,Dr|7.7|0|A cartoonist can't let go of an unsolved killer's codes.
-Superbad|2007|m|Co|7.6|0|Two best friends have one night to get to one party.
-A Quiet Place|2018|m|Ho,Sf,Th|7.5|0|A family survives by never making a sound.
-The Conjuring|2013|m|Ho,My|7.5|0|Two investigators help a family in a very wrong farmhouse.
-John Wick|2014|m|Ac,Th,Cr|7.4|0|A retired hitman comes back for the people who wronged him.
-Hereditary|2018|m|Ho,My,Dr|7.3|0|After a death, a family starts to uncover what it inherited.
-Breaking Bad|2008|s|Cr,Dr,Th|9.5|0|A chemistry teacher becomes very good at a very bad job.
-Planet Earth II|2016|s|Do,Fa|9.5|1|The natural world, filmed closer than ever.
-Band of Brothers|2001|s|Wa,Dr|9.4|0|One company of paratroopers, from training to the end of the war.
-Chernobyl|2019|s|Dr,Th|9.3|0|The 1986 disaster and the people sent to contain it.
-The Wire|2002|s|Cr,Dr|9.3|0|Baltimore, seen through its police, dealers, docks and schools.
-Avatar: The Last Airbender|2005|s|An,Fn,Ad,Fa|9.3|1|A boy who bends all four elements has a war to end.
-Bluey|2018|s|An,Fa,Co|9.3|1|A blue heeler pup turns every day into a game.
-The Sopranos|1999|s|Cr,Dr|9.2|0|A mob boss starts seeing a therapist.
-Game of Thrones|2011|s|Fn,Dr,Ad|9.2|0|Noble families fight for a throne while winter closes in.
-Our Planet|2019|s|Do,Fa|9.2|1|Wild places around the world and how they are changing.
-Rick and Morty|2013|s|An,Sf,Co|9.1|0|A reckless scientist drags his grandson across dimensions.
-Attack on Titan|2013|s|An,Ac,Fn|9.1|0|Humanity hides behind walls from giants, until the walls fail.
-Sherlock|2010|s|My,Cr,Dr|9.0|1|Holmes and Watson solve cases in present-day London.
-Arcane|2021|s|An,Ac,Fn|9.0|0|Two sisters end up on opposite sides of a divided city.
-Better Call Saul|2015|s|Cr,Dr|9.0|0|A small-time lawyer bends the rules until they break.
-The Office|2005|s|Co|9.0|1|Daily life at a paper company with a boss who tries too hard.
-The Last Dance|2020|s|Do|9.0|0|Michael Jordan and the Bulls chase a sixth title.
-True Detective|2014|s|Cr,My,Dr|8.9|0|Two detectives and a case that follows them for years.
-Friends|1994|s|Co,Ro|8.9|1|Six friends, one coffee shop, ten years in New York.
-Fargo|2014|s|Cr,Dr,Th|8.9|0|Polite people in cold towns make terrible decisions.
-Gravity Falls|2012|s|An,Fa,My,Co|8.9|1|Twins spend a summer in a town full of secrets.
-Death Note|2006|s|An,Th,My|8.9|0|A student finds a notebook that kills, and a detective finds him.
-Succession|2018|s|Dr,Co|8.8|0|A media dynasty's children fight over who takes the chair.
-Ted Lasso|2020|s|Co,Dr|8.8|0|An American football coach takes over an English soccer club.
-Peaky Blinders|2013|s|Cr,Dr|8.7|0|A Birmingham gang climbs after the First World War.
-Dark|2017|s|Sf,My,Th|8.7|0|A missing child exposes a town knotted through time.
-Black Mirror|2011|s|Sf,Th,Dr|8.7|0|Stand-alone stories about technology going one step too far.
-Severance|2022|s|Sf,My,Th|8.7|0|Office workers have their work and home memories split apart.
-Fleabag|2016|s|Co,Dr|8.7|0|A sharp, messy Londoner talks straight to the camera.
-Narcos|2015|s|Cr,Dr|8.7|0|The rise of the Colombian cartels and the agents chasing them.
-Downton Abbey|2010|s|Dr,Ro|8.7|1|An English estate, upstairs and downstairs, through changing times.
-Stranger Things|2016|s|Sf,Ho,My|8.6|0|A boy vanishes and his friends find a girl with powers.
-The Mandalorian|2019|s|Sf,Ac,Ad|8.6|1|A lone bounty hunter ends up protecting a small green child.
-The Last of Us|2023|s|Dr,Ho,Ac|8.6|0|A smuggler escorts a teenager across a ruined America.
-Parks and Recreation|2009|s|Co|8.6|1|An endlessly upbeat official runs a small-town parks office.
-Mindhunter|2017|s|Cr,Th,My|8.6|0|FBI agents interview killers to learn how they think.
-The Crown|2016|s|Dr|8.6|1|The reign of Elizabeth II, decade by decade.
-Shōgun|2024|s|Dr,Ad,Wa|8.6|0|A shipwrecked English pilot lands in feudal Japan's power struggle.
-Yellowstone|2018|s|We,Dr|8.6|0|A ranching family defends the largest ranch in Montana.
-The Boys|2019|s|Ac,Co,Sf|8.6|0|A scrappy crew takes on corrupt celebrity superheroes.
-The Bear|2022|s|Dr,Co|8.5|0|A fine-dining chef comes home to run the family sandwich shop.
-The Queen's Gambit|2020|s|Dr|8.5|0|An orphan with a gift for chess climbs to the top.
-The Haunting of Hill House|2018|s|Ho,Dr,My|8.5|0|Grown siblings are pulled back to the house that marked them.
-Modern Family|2009|s|Co,Fa|8.5|1|Three branches of one big family, filmed like a documentary.
-Brooklyn Nine-Nine|2013|s|Co,Cr|8.4|1|A goofy detective and a by-the-book captain run a precinct.
-Normal People|2020|s|Ro,Dr|8.4|0|Two Irish teenagers keep finding and losing each other.
-Westworld|2016|s|Sf,We,My|8.4|0|The android hosts of a theme park start to remember.
-House of the Dragon|2022|s|Fn,Dr,Ac|8.3|0|The Targaryens tear themselves apart over succession.
-Lost|2004|s|My,Ad,Sf|8.3|1|Plane crash survivors find their island is not empty.
-Money Heist|2017|s|Cr,Ac,Th|8.2|0|A mastermind and eight thieves take over the Royal Mint.
-The Good Place|2016|s|Co,Fn|8.2|1|A woman lands in the afterlife by clerical error.
-Only Murders in the Building|2021|s|Co,My,Cr|8.1|0|Three neighbours start a podcast about a death in their building.
-Squid Game|2021|s|Th,Dr,Ac|8.0|0|Players in debt compete in children's games for a fortune.
-The Witcher|2019|s|Fn,Ac,Ad|7.9|0|A monster hunter is tied by fate to a princess and a sorceress.
-Bridgerton|2020|s|Ro,Dr|7.4|0|London's marriage season, with gossip in print.`;
+const G={Ac:'Action',Ad:'Adventure',An:'Animation',Co:'Comedy',Cr:'Crime',Do:'Documentary',Dr:'Drama',Fa:'Family',Fn:'Fantasy',Hi:'History',Ho:'Horror',Mu:'Music',My:'Mystery',Ro:'Romance',Sf:'Sci-Fi',Th:'Thriller',Wa:'War',We:'Western'};
+const PAL={Ac:['#ff6a3d','#7a1023'],Ad:['#f2a33a','#16615e'],An:['#ff7ac3','#5b3df5'],Co:['#ffd23f','#f0660a'],Cr:['#4a5072','#0d0f1a'],Do:['#2fa87f','#0c3540'],Dr:['#c44569','#2c1338'],Fa:['#5ed4f4','#2b62d8'],Fn:['#8468ff','#0f2358'],Hi:['#c9a36a','#3a2716'],Ho:['#b3122b','#0b0508'],Mu:['#f72585','#3a0ca3'],My:['#5a7699','#0f1726'],Ro:['#ff8fa3','#b0123f'],Sf:['#22c7e6','#1b1464'],Th:['#3a3d4a','#3b0d12'],Wa:['#8f8c5c','#25281a'],We:['#f6ae2d','#9c3a10']};
+/* TMDB genre ids */
+const GM={28:'Ac',12:'Ad',16:'An',35:'Co',80:'Cr',99:'Do',18:'Dr',10751:'Fa',14:'Fn',36:'Hi',27:'Ho',10402:'Mu',9648:'My',10749:'Ro',878:'Sf',53:'Th',10752:'Wa',37:'We'};
+const GT={10759:['Ac','Ad'],16:['An'],35:['Co'],80:['Cr'],99:['Do'],18:['Dr'],10751:['Fa'],10762:['Fa'],9648:['My'],10765:['Sf','Fn'],10768:['Wa'],37:['We']};
+const GID={m:{Ac:28,Ad:12,An:16,Co:35,Cr:80,Do:99,Dr:18,Fa:10751,Fn:14,Hi:36,Ho:27,Mu:10402,My:9648,Ro:10749,Sf:878,Th:53,Wa:10752,We:37},s:{Ac:10759,Ad:10759,An:16,Co:35,Cr:80,Do:99,Dr:18,Fa:10751,Fn:10765,My:9648,Sf:10765,Wa:10768,We:37}};
+/* id|title|year|kind|genres|IMDb score|family|top250|hook */
+const RAW=`tt0055630|Yojimbo|1961|m|Ac,Dr,Th|8.2|0|1|
+tt0051201|Witness for the Prosecution|1957|m|Cr,Dr,My|8.4|0|1|
+tt2582802|Whiplash|2014|m|Dr,Mu|8.5|0|1|A young drummer and a teacher who pushes far past the limit.
+tt1291584|Warrior|2011|m|Ac,Dr|8.2|0|1|
+tt0910970|WALL·E|2008|m|An,Sf,Fa|8.4|1|1|A lonely cleanup robot follows a visitor into space.
+tt0052357|Vertigo|1958|m|My,Ro,Th|8.3|0|1|
+tt0434409|V for Vendetta|2005|m|Ac,Dr,Sf|8.2|0|1|
+tt1049413|Up|2009|m|An,Fa,Ad|8.3|1|1|An old man floats his house to South America with a stowaway.
+tt0105695|Unforgiven|1992|m|Dr,We|8.2|0|1|
+tt0046438|Tokyo Story|1953|m|Dr|8.2|0|1|
+tt0117951|Trainspotting|1996|m|Dr|8.1|0|1|
+tt0435761|Toy Story 3|2010|m|An,Ad,Co|8.3|1|1|
+tt0114709|Toy Story|1995|m|An,Fa,Co|8.3|1|1|A cowboy doll feels replaced when a space ranger arrives.
+tt1745960|Top Gun: Maverick|2022|m|Ac,Dr|8.2|1|1|A veteran pilot trains a new class for one impossible run.
+tt0096283|My Neighbor Totoro|1988|m|An,Fa,Fn|8.1|1|1|Two sisters meet the gentle spirits living near their new house.
+tt0056592|To Kill a Mockingbird|1962|m|Cr,Dr|8.3|0|1|
+tt0035446|To Be or Not to Be|1942|m|Co,Ro,Wa|8.2|0|1|
+tt5027774|Three Billboards Outside Ebbing, Missouri|2017|m|Co,Cr,Dr|8.1|0|1|
+tt0469494|There Will Be Blood|2007|m|Dr|8.2|0|1|
+tt0993846|The Wolf of Wall Street|2013|m|Co,Cr,Dr|8.2|0|1|A stockbroker gets rich fast and falls faster.
+tt0032138|The Wizard of Oz|1939|m|Ad,Fa,Fn|8.1|1|1|
+tt0114814|The Usual Suspects|1995|m|Cr,My,Th|8.5|0|1|Five crooks, one line-up, and a name nobody dares to say.
+tt0120382|The Truman Show|1998|m|Co,Dr|8.2|1|1|A man starts to suspect his whole town is a set.
+tt0040897|The Treasure of the Sierra Madre|1948|m|Ad,Dr,We|8.2|0|1|
+tt0041959|The Third Man|1949|m|Cr,My,Th|8.1|0|1|
+tt0084787|The Thing|1982|m|Ho,My,Sf|8.2|0|1|
+tt0088247|The Terminator|1984|m|Ac,Sf|8.1|0|1|
+tt0070735|The Sting|1973|m|Co,Cr,Dr|8.3|1|1|
+tt0059742|The Sound of Music|1965|m|Dr,Fa|8.1|1|1|
+tt0167404|The Sixth Sense|1999|m|Dr,My,Th|8.2|0|1|
+tt0102926|The Silence of the Lambs|1991|m|Th,Cr,Ho|8.6|0|1|A trainee agent trades secrets with a brilliant monster.
+tt0081505|The Shining|1980|m|Ho,Dr|8.4|0|1|A winter job at an empty hotel slowly breaks a family.
+tt0111161|The Shawshank Redemption|1994|m|Dr,Cr|9.3|0|1|Two inmates, decades of patience, and one very long game.
+tt0482571|The Prestige|2006|m|My,Th,Dr|8.5|0|1|Two rival magicians keep raising the price of the trick.
+tt0253474|The Pianist|2002|m|Dr,Mu|8.5|0|1|
+tt0133093|The Matrix|1999|m|Sf,Ac|8.7|0|1|A hacker learns his world is a program, then fights it.
+tt0167261|The Lord of the Rings: The Two Towers|2002|m|Ac,Ad,Dr|8.8|0|1|
+tt0167260|The Lord of the Rings: The Return of the King|2003|m|Fn,Ad|9.0|1|1|The last march to Mordor, with everything on the line.
+tt0120737|The Lord of the Rings: The Fellowship of the Ring|2001|m|Fn,Ad|8.9|1|1|A small hobbit carries a very big problem out of the Shire.
+tt0110357|The Lion King|1994|m|An,Fa,Ad,Mu|8.5|1|1|A runaway cub has to grow up and take back his home.
+tt0012349|The Kid|1921|m|Co,Dr,Fa|8.3|1|1|
+tt0129167|The Iron Giant|1999|m|An,Ac,Ad|8.1|1|1|
+tt0317705|The Incredibles|2004|m|An,Fa,Ac|8.0|1|1|A retired superhero family gets pulled back to work.
+tt1454029|The Help|2011|m|Dr|8.1|0|1|
+tt0120689|The Green Mile|1999|m|Dr,Fn,Cr|8.6|0|1|A death row guard meets a prisoner with an impossible gift.
+tt0057115|The Great Escape|1963|m|Ad,Dr,Hi|8.2|0|1|
+tt0032553|The Great Dictator|1940|m|Co,Dr,Wa|8.4|1|1|
+tt0032551|The Grapes of Wrath|1940|m|Dr|8.1|0|1|
+tt2278388|The Grand Budapest Hotel|2014|m|Co,Ad|8.1|0|1|A concierge and his lobby boy get tangled in a stolen painting.
+tt0015864|The Gold Rush|1925|m|Ad,Co,Dr|8.2|0|1|
+tt0071562|The Godfather Part II|1974|m|Cr,Dr|9.0|0|1|
+tt0068646|The Godfather|1972|m|Cr,Dr|9.2|0|1|A reluctant son inherits the family business and its sins.
+tt0017925|The General|1926|m|Ac,Ad,Co|8.2|0|1|
+tt10272386|The Father|2020|m|Dr,My|8.2|0|1|
+tt0070047|The Exorcist|1973|m|Ho|8.1|0|1|
+tt0080684|Star Wars: The Empire Strikes Back|1980|m|Ac,Ad,Fn|8.7|1|1|
+tt0080678|The Elephant Man|1980|m|Dr|8.2|1|1|
+tt0407887|The Departed|2006|m|Cr,Th|8.5|0|1|A cop inside the mob and a mobster inside the police hunt each other.
+tt0077416|The Deer Hunter|1978|m|Dr,Wa|8.1|0|1|
+tt1345836|The Dark Knight Rises|2012|m|Ac,Dr|8.4|0|1|
+tt0468569|The Dark Knight|2008|m|Ac,Cr,Th|9.0|0|1|Gotham's guardian meets a villain who only wants chaos.
+tt0050212|The Bridge on the River Kwai|1957|m|Ad,Dr,Wa|8.2|1|1|
+tt0118715|The Big Lebowski|1998|m|Co,Cr|8.1|0|1|A laid-back bowler gets mistaken for a millionaire.
+tt0036868|The Best Years of Our Lives|1946|m|Dr,Ro,Wa|8.1|0|1|
+tt0053604|The Apartment|1960|m|Co,Dr,Ro|8.3|0|1|
+tt0103064|Terminator 2: Judgment Day|1991|m|Ac,Sf|8.6|0|1|
+tt0057565|High and Low|1963|m|Cr,Dr,My|8.4|0|1|
+tt0075314|Taxi Driver|1976|m|Cr,Dr|8.2|0|1|
+tt0986264|Taare Zameen Par|2007|m|Dr,Fa|8.4|1|1|
+tt0043014|Sunset Boulevard|1950|m|Dr,Cr|8.4|0|1|
+tt0086190|Star Wars: Return of the Jedi|1983|m|Ac,Ad,Fn|8.3|1|1|
+tt0076759|Star Wars|1977|m|Ac,Ad,Fn|8.6|1|1|
+tt0092005|Stand by Me|1986|m|Ad,Dr|8.1|0|1|
+tt1895587|Spotlight|2015|m|Dr,Cr|8.1|0|1|A newsroom team digs into a story the city buried.
+tt10872600|Spider-Man: No Way Home|2021|m|Ac,Ad,Fn|8.3|0|1|
+tt4633694|Spider-Man: Into the Spider-Verse|2018|m|An,Ac,Ad|8.4|1|1|A Brooklyn kid meets a crowd of other Spider-heroes.
+tt0053291|Some Like It Hot|1959|m|Co,Mu,Ro|8.2|0|1|
+tt0208092|Snatch|2000|m|Co,Cr|8.2|0|1|
+tt0050986|Wild Strawberries|1957|m|Dr,Ro|8.1|0|1|
+tt0045152|Singin' in the Rain|1952|m|Co,Mu,Ro|8.3|1|1|
+tt1130884|Shutter Island|2010|m|My,Th|8.2|0|1|A marshal searches an island asylum for a missing patient.
+tt0047478|Seven Samurai|1954|m|Ac,Dr|8.6|0|1|
+tt0015324|Sherlock Jr.|1924|m|Ac,Co,Ro|8.2|0|1|
+tt0056058|Harakiri|1962|m|Ac,Dr,My|8.6|0|1|
+tt0245429|Spirited Away|2001|m|An,Fn,Fa|8.6|1|1|A girl takes a job in a bathhouse for spirits to save her parents.
+tt0114369|Se7en|1995|m|Cr,My,Th|8.6|0|1|Two detectives chase a killer working through the deadly sins.
+tt0108052|Schindler's List|1993|m|Dr,Wa|9.0|0|1|A profiteer turns his factory into a lifeline.
+tt0086250|Scarface|1983|m|Cr,Dr|8.3|0|1|
+tt0120815|Saving Private Ryan|1998|m|Wa,Dr|8.6|0|1|A squad crosses occupied France to bring one soldier home.
+tt0353969|Memories of Murder|2003|m|Cr,Dr,My|8.1|0|1|
+tt1979320|Rush|2013|m|Ac,Dr|8.1|0|1|
+tt3170832|Room|2015|m|Dr,Th|8.1|0|1|
+tt0075148|Rocky|1976|m|Dr|8.1|1|1|
+tt0105236|Reservoir Dogs|1992|m|Cr,Th|8.3|0|1|
+tt0180093|Requiem for a Dream|2000|m|Dr|8.3|0|1|
+tt3011894|Wild Tales|2014|m|Co,Dr,Th|8.1|0|1|
+tt0032976|Rebecca|1940|m|Dr,Cr,My|8.1|0|1|
+tt0047396|Rear Window|1954|m|My,Th|8.5|1|1|A photographer stuck at home starts watching the neighbours too closely.
+tt0382932|Ratatouille|2007|m|An,Fa,Co|8.1|1|1|A rat with a great palate cooks in a Paris kitchen.
+tt0042876|Rashomon|1950|m|Cr,Dr,My|8.2|0|1|
+tt0089881|Ran|1985|m|Ac,Dr,Wa|8.2|0|1|
+tt0082971|Raiders of the Lost Ark|1981|m|Ad,Ac|8.4|1|1|An archaeologist races to reach a lost relic first.
+tt0081398|Raging Bull|1980|m|Dr|8.2|0|1|
+tt0110912|Pulp Fiction|1994|m|Cr,Dr|8.9|0|1|Hitmen, a boxer and a briefcase, shuffled out of order.
+tt0054215|Psycho|1960|m|Ho,My,Th|8.5|0|1|
+tt1392214|Prisoners|2013|m|Th,Cr,My|8.2|0|1|When his daughter vanishes, a father takes over the search.
+tt0091763|Platoon|1986|m|Dr,Wa|8.1|0|1|
+tt0325980|Pirates of the Caribbean: The Curse of the Black Pearl|2003|m|Ad,Fn,Ac|8.1|1|1|A slippery pirate and a blacksmith chase a cursed ship.
+tt0060827|Persona|1966|m|Dr,Th|8.1|0|1|
+tt0059578|For a Few Dollars More|1965|m|We|8.2|0|1|
+tt0050825|Paths of Glory|1957|m|Dr,Wa|8.4|0|1|
+tt0048473|Pather Panchali|1955|m|Dr|8.3|0|1|
+tt0073486|One Flew Over the Cuckoo's Nest|1975|m|Dr|8.7|0|1|
+tt0087843|Once Upon a Time in America|1984|m|Cr,Dr|8.3|0|1|
+tt0047296|On the Waterfront|1954|m|Cr,Dr,Th|8.1|0|1|
+tt0364569|Oldboy|2003|m|Th,My,Ac|8.3|0|1|Locked up for 15 years, then freed with five days to learn why.
+tt0095765|Cinema Paradiso|1988|m|Dr,Ro|8.5|1|1|
+tt0053125|North by Northwest|1959|m|Ac,Ad,My|8.3|0|1|
+tt0477348|No Country for Old Men|2007|m|Cr,Th,We|8.2|0|1|A hunter takes a bag of cash and a killer follows.
+tt0074958|Network|1976|m|Dr|8.1|0|1|
+tt0031679|Mr. Smith Goes to Washington|1939|m|Co,Dr|8.1|0|1|
+tt0071853|Monty Python and the Holy Grail|1975|m|Ad,Co,Fn|8.2|1|1|
+tt0198781|Monsters, Inc.|2001|m|An,Ad,Co|8.1|1|1|
+tt0119698|Princess Mononoke|1997|m|An,Fn,Ad|8.3|0|1|A cursed prince walks into a war between a forest and a town.
+tt0027977|Modern Times|1936|m|Co,Dr,Ro|8.5|1|1|
+tt0405159|Million Dollar Baby|2004|m|Dr|8.1|0|1|
+tt0017136|Metropolis|1927|m|Dr,Sf|8.3|0|1|
+tt0209144|Memento|2000|m|My,Th|8.4|0|1|A man with no short-term memory hunts a killer backwards.
+tt0978762|Mary and Max|2009|m|An,Co,Dr|8.1|0|1|
+tt1392190|Mad Max: Fury Road|2015|m|Ac,Sf,Ad|8.1|0|1|One long desert chase, there and back again.
+tt0022100|M|1931|m|Cr,My,Th|8.3|0|1|
+tt0110413|Léon: The Professional|1994|m|Ac,Cr,Dr|8.5|0|1|
+tt3315342|Logan|2017|m|Ac,Dr,Sf|8.1|0|1|
+tt0120735|Lock, Stock and Two Smoking Barrels|1998|m|Ac,Co,Cr|8.2|0|1|
+tt0079470|Life of Brian|1979|m|Co|8.0|0|1|
+tt0053198|The 400 Blows|1959|m|Cr,Dr|8.1|0|1|
+tt0046268|The Wages of Fear|1953|m|Ad,Dr,Th|8.2|0|1|
+tt0211915|Amélie|2001|m|Ro,Co|8.3|0|1|A shy Parisian waitress quietly fixes other people's lives.
+tt0056172|Lawrence of Arabia|1962|m|Ad,Dr|8.3|0|1|
+tt0040522|Bicycle Thieves|1948|m|Dr|8.3|0|1|
+tt0118799|Life Is Beautiful|1997|m|Co,Dr,Ro|8.6|0|1|
+tt0019254|The Passion of Joan of Arc|1928|m|Dr,Hi|8.2|0|1|
+tt0113247|La Haine|1995|m|Cr,Dr|8.1|0|1|
+tt0058946|The Battle of Algiers|1966|m|Dr,Wa|8.1|0|1|
+tt0119488|L.A. Confidential|1997|m|Cr,Dr,My|8.2|0|1|
+tt4729430|Klaus|2019|m|An,Ad,Co|8.1|1|1|
+tt5311514|Your Name.|2016|m|An,Ro,Fn|8.4|1|1|Two strangers keep waking up in each other's lives.
+tt0266697|Kill Bill: Vol. 1|2003|m|Ac,Cr,Dr|8.2|0|1|
+tt0107290|Jurassic Park|1993|m|Sf,Ad|8.2|1|1|A dinosaur theme park fails its safety inspection.
+tt0055031|Judgment at Nuremberg|1961|m|Dr,Wa|8.3|0|1|
+tt7286456|Joker|2019|m|Cr,Dr,Th|8.3|0|1|A failed comedian slides toward something darker.
+tt1832382|A Separation|2011|m|Dr|8.3|0|1|A Tehran couple's split pulls two families into a dispute.
+tt0073195|Jaws|1975|m|Ad,Th|8.1|0|1|
+tt15097216|Jai Bhim|2021|m|Cr,Dr,My|8.9|0|1|
+tt2106476|The Hunt|2012|m|Dr|8.3|0|1|
+tt0038650|It's a Wonderful Life|1946|m|Dr,Fa,Fn|8.6|1|1|
+tt0025316|It Happened One Night|1934|m|Co,Ro|8.1|0|1|
+tt1675434|The Intouchables|2011|m|Co,Dr|8.5|0|1|
+tt0758758|Into the Wild|2007|m|Ad,Dr|8.1|0|1|
+tt0816692|Interstellar|2014|m|Sf,Dr,Ad|8.7|1|1|A father leaves Earth to find humanity a new home.
+tt2096673|Inside Out|2015|m|An,Fa,Co|8.1|1|1|Five emotions try to steer an eleven-year-old through a move.
+tt0361748|Inglourious Basterds|2009|m|Wa,Dr,Ad|8.4|0|1|Several plots to end the war collide in one Paris cinema.
+tt0097576|Indiana Jones and the Last Crusade|1989|m|Ac,Ad|8.2|0|1|
+tt1375666|Inception|2010|m|Sf,Ac,Th|8.8|1|1|A heist crew breaks into dreams, layer under layer.
+tt1255953|Incendies|2010|m|Dr,My|8.3|0|1|
+tt0107207|In the Name of the Father|1993|m|Cr,Dr|8.1|0|1|
+tt0060196|The Good, the Bad and the Ugly|1966|m|We,Ad|8.8|0|1|Three gunmen, one buried fortune, zero trust.
+tt0044741|Ikiru|1952|m|Dr|8.3|0|1|
+tt0091251|Come and See|1985|m|Dr,Th,Wa|8.4|0|1|
+tt0892769|How to Train Your Dragon|2010|m|An,Fa,Ad,Fn|8.1|1|1|A Viking boy befriends the dragon he was meant to hunt.
+tt0395169|Hotel Rwanda|2004|m|Dr,Hi|8.1|0|1|
+tt0095327|Grave of the Fireflies|1988|m|An,Dr,Wa|8.5|0|1|
+tt0113277|Heat|1995|m|Cr,Ac,Th|8.3|0|1|A master thief and an obsessed detective circle each other.
+tt0347149|Howl's Moving Castle|2004|m|An,Ad,Fa|8.2|1|1|
+tt1201607|Harry Potter and the Deathly Hallows - Part 2|2011|m|Ad,Fa,Fn|8.1|1|1|
+tt8503618|Hamilton|2020|m|Dr,Hi|8.4|0|1|
+tt2119532|Hacksaw Ridge|2016|m|Wa,Dr|8.1|0|1|A medic goes into battle and refuses to carry a weapon.
+tt1028532|Hachi: A Dog's Tale|2009|m|Dr,Fa|8.1|1|1|
+tt0107048|Groundhog Day|1993|m|Co,Ro,Fn|8.0|1|1|A grumpy weatherman relives the same day until he gets it right.
+tt6966692|Green Book|2018|m|Co,Dr|8.2|0|1|
+tt1205489|Gran Torino|2008|m|Dr|8.1|0|1|
+tt0099685|Goodfellas|1990|m|Cr,Dr|8.7|0|1|The rise and unravelling of a mob life, told at full speed.
+tt0119217|Good Will Hunting|1997|m|Dr,Ro|8.3|0|1|A janitor with a gift for maths meets a therapist who won't quit.
+tt0031381|Gone with the Wind|1939|m|Dr,Ro,Wa|8.2|0|1|
+tt2267998|Gone Girl|2014|m|Th,My,Dr|8.1|0|1|A wife disappears and her husband's story stops adding up.
+tt0172495|Gladiator|2000|m|Ac,Dr,Ad|8.5|0|1|A betrayed general fights his way back through the arena.
+tt6751668|Parasite|2019|m|Th,Dr,Co|8.5|0|1|A poor family talks its way into a rich household.
+tt0083987|Gandhi|1982|m|Dr|8.1|1|1|
+tt0093058|Full Metal Jacket|1987|m|Dr,Wa|8.3|0|1|
+tt0109830|Forrest Gump|1994|m|Dr,Ro,Co|8.8|0|1|A simple man keeps wandering into history.
+tt1950186|Ford v Ferrari|2019|m|Dr,Ac|8.1|1|1|A designer and a driver build a car to beat Ferrari at Le Mans.
+tt0266543|Finding Nemo|2003|m|An,Ad,Co|8.2|1|1|
+tt0137523|Fight Club|1999|m|Dr,Th|8.8|0|1|An insomniac finds a cure that gets badly out of hand.
+tt0116282|Fargo|1996|m|Cr,Th|8.1|0|1|
+tt6710474|Everything Everywhere All at Once|2022|m|Sf,Co,Ac|7.8|0|1|A laundromat owner is pulled across the multiverse during a tax audit.
+tt0338013|Eternal Sunshine of the Spotless Mind|2004|m|Ro,Sf,Dr|8.3|0|1|A couple erase each other from memory, then have second thoughts.
+tt1305806|The Secret in Their Eyes|2009|m|Dr,My,Ro|8.2|0|1|
+tt0457430|Pan's Labyrinth|2006|m|Fn,Wa,Dr|8.2|0|1|A girl finds a dark fairy tale next to a real war.
+tt0057012|Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb|1964|m|Co,Wa|8.4|1|1|
+tt0036775|Double Indemnity|1944|m|Cr,Dr|8.3|0|1|
+tt1853728|Django Unchained|2012|m|We,Dr|8.5|0|1|A freed man and a bounty hunter ride out to rescue his wife.
+tt0095016|Die Hard|1988|m|Ac,Th|8.2|0|1|One off-duty cop, one tower, a building full of thieves.
+tt0046912|Dial M for Murder|1954|m|Cr,Th|8.2|0|1|
+tt0050976|The Seventh Seal|1957|m|Dr,Fn|8.1|0|1|
+tt0071411|Dersu Uzala|1975|m|Ad,Dr|8.2|1|1|
+tt0363163|Downfall|2004|m|Dr,Hi|8.2|0|1|
+tt0097165|Dead Poets Society|1989|m|Co,Dr|8.1|1|1|
+tt0405094|The Lives of Others|2006|m|Dr,My,Th|8.4|0|1|
+tt0082096|Das Boot|1981|m|Dr,Wa|8.4|0|1|
+tt5074352|Dangal|2016|m|Ac,Dr|8.3|0|1|
+tt0061512|Cool Hand Luke|1967|m|Cr,Dr|8.1|0|1|
+tt2380307|Coco|2017|m|An,Fa,Mu|8.4|1|1|A boy who loves music crosses into the Land of the Dead.
+tt0021749|City Lights|1931|m|Co,Dr,Ro|8.5|1|1|
+tt0033467|Citizen Kane|1941|m|Dr,My|8.3|1|1|
+tt0317248|City of God|2002|m|Cr,Dr|8.6|0|1|Two boys grow up in a Rio favela and choose different paths.
+tt0071315|Chinatown|1974|m|Dr,My,Th|8.2|0|1|
+tt0264464|Catch Me If You Can|2002|m|Cr,Dr,Co|8.1|1|1|A teenage con man stays one step ahead of the FBI.
+tt0112641|Casino|1995|m|Cr,Dr|8.2|0|1|
+tt0034583|Casablanca|1942|m|Ro,Dr,Wa|8.5|1|1|An old flame walks into the wrong bar in wartime Morocco.
+tt8267604|Capernaum|2018|m|Dr|8.4|0|1|
+tt0064116|Once Upon a Time in the West|1968|m|We|8.5|0|1|
+tt0112573|Braveheart|1995|m|Dr,Hi|8.4|0|1|
+tt0083658|Blade Runner|1982|m|Ac,Dr,Sf|8.1|0|1|
+tt0052618|Ben-Hur|1959|m|Ad,Dr|8.1|1|1|
+tt0381681|Before Sunset|2004|m|Dr,Ro|8.1|0|1|
+tt0112471|Before Sunrise|1995|m|Ro,Dr|8.1|0|1|Two strangers get off a train and talk through one night in Vienna.
+tt0372784|Batman Begins|2005|m|Ac,Cr,Dr|8.2|0|1|
+tt0072684|Barry Lyndon|1975|m|Ad,Dr,Wa|8.1|1|1|
+tt0088763|Back to the Future|1985|m|Sf,Co,Ad|8.5|1|1|A teenager lands in 1955 and nearly erases himself.
+tt0118849|Children of Heaven|1997|m|Dr,Fa|8.2|1|1|
+tt0476735|My Father and My Son|2005|m|Dr,Fa|8.2|1|1|
+tt4154756|Avengers: Infinity War|2018|m|Ac,Ad,Sf|8.4|0|1|
+tt4154796|Avengers: Endgame|2019|m|Ac,Sf,Ad|8.4|1|1|The surviving heroes try one last plan to undo a loss.
+tt0078788|Apocalypse Now|1979|m|Dr,My,Wa|8.5|0|1|
+tt0245712|Amores Perros|2000|m|Dr,Th|8.1|0|1|
+tt0120586|American History X|1998|m|Cr,Dr|8.5|0|1|
+tt0169547|American Beauty|1999|m|Dr|8.4|0|1|
+tt0086879|Amadeus|1984|m|Dr,Mu|8.4|1|1|
+tt0042192|All About Eve|1950|m|Dr|8.2|0|1|
+tt0090605|Aliens|1986|m|Ac,Ad,Sf|8.4|0|1|
+tt0078748|Alien|1979|m|Ho,Sf|8.5|0|1|A cargo crew answers a signal and brings something aboard.
+tt0103639|Aladdin|1992|m|An,Ad,Co|8.0|1|1|
+tt4016934|The Handmaiden|2016|m|Dr,Ro,Th|8.1|0|1|
+tt0066921|A Clockwork Orange|1971|m|Cr,Sf|8.3|0|1|
+tt0268978|A Beautiful Mind|2001|m|Dr|8.2|0|1|
+tt1187043|3 Idiots|2009|m|Co,Dr|8.4|0|1|
+tt0062622|2001: A Space Odyssey|1968|m|Ad,Sf|8.3|1|1|
+tt8579674|1917|2019|m|Wa,Dr|8.2|0|1|Two soldiers cross enemy ground to stop an attack.
+tt2024544|12 Years a Slave|2013|m|Dr,Hi|8.1|0|1|
+tt0050083|12 Angry Men|1957|m|Dr,Cr|9.0|1|1|One juror, one hot room, and eleven minds to change.
+dune-part-two-2024|Dune: Part Two|2024|m|Sf,Ad,Ac|8.5|1|0|Paul rides with the Fremen toward a war he may not control.
+senna-2010|Senna|2010|m|Do|8.5|1|0|The racing life of Ayrton Senna, told through archive footage.
+oppenheimer-2023|Oppenheimer|2023|m|Dr|8.3|0|0|The physicist who built the bomb lives with what follows.
+free-solo-2018|Free Solo|2018|m|Do,Ad|8.1|0|0|A climber goes up El Capitan with no rope.
+my-octopus-teacher-2020|My Octopus Teacher|2020|m|Do|8.1|1|0|A diver visits the same octopus every day for a year.
+blade-runner-2049-2017|Blade Runner 2049|2017|m|Sf,My,Dr|8.0|0|0|A replicant hunter digs up a secret that could upend everything.
+the-martian-2015|The Martian|2015|m|Sf,Ad,Co|8.0|1|0|A stranded astronaut farms potatoes and waits for a ride.
+la-la-land-2016|La La Land|2016|m|Ro,Mu,Dr|8.0|1|0|A pianist and an actress fall in love while chasing their careers.
+the-princess-bride-1987|The Princess Bride|1987|m|Fa,Fn,Ad,Ro,Co|8.0|1|0|A farm boy turned pirate comes back for his true love.
+knives-out-2019|Knives Out|2019|m|My,Co,Cr|7.9|1|0|A novelist dies and every relative has a motive.
+arrival-2016|Arrival|2016|m|Sf,Dr,My|7.9|1|0|A linguist is asked to talk to visitors from elsewhere.
+harry-potter-and-the-prisoner-of-azkaban-2004|Harry Potter and the Prisoner of Azkaban|2004|m|Fn,Fa,Ad|7.9|1|0|Harry's third year brings an escaped prisoner and old secrets.
+bohemian-rhapsody-2018|Bohemian Rhapsody|2018|m|Mu,Dr|7.9|1|0|Freddie Mercury and Queen, from pub gigs to Live Aid.
+the-social-network-2010|The Social Network|2010|m|Dr|7.8|1|0|A dorm-room site becomes a giant and costs its founder his friends.
+get-out-2017|Get Out|2017|m|Ho,My,Th|7.8|0|0|A weekend with his girlfriend's parents turns deeply wrong.
+paddington-2-2017|Paddington 2|2017|m|Fa,Co,Ad|7.8|1|0|A polite bear is framed for theft and wins over a prison.
+pride-prejudice-2005|Pride & Prejudice|2005|m|Ro,Dr|7.8|1|0|Elizabeth Bennet and Mr Darcy misjudge each other, slowly.
+the-notebook-2004|The Notebook|2004|m|Ro,Dr|7.8|0|0|A summer romance that neither class nor time can end.
+about-time-2013|About Time|2013|m|Ro,Co,Fn|7.8|0|0|A young man who can redo moments learns what to leave alone.
+dunkirk-2017|Dunkirk|2017|m|Wa,Th,Ac|7.8|1|0|Land, sea and air race to get an army off a beach.
+the-hangover-2009|The Hangover|2009|m|Co|7.7|0|0|Three friends wake up in Vegas missing the groom.
+when-harry-met-sally-1989|When Harry Met Sally...|1989|m|Ro,Co|7.7|0|0|Two friends spend years arguing about whether they can stay friends.
+home-alone-1990|Home Alone|1990|m|Fa,Co|7.7|1|0|An eight-year-old defends his house from two burglars.
+zodiac-2007|Zodiac|2007|m|Cr,My,Dr|7.7|0|0|A cartoonist can't let go of an unsolved killer's codes.
+superbad-2007|Superbad|2007|m|Co|7.6|0|0|Two best friends have one night to get to one party.
+a-quiet-place-2018|A Quiet Place|2018|m|Ho,Sf,Th|7.5|0|0|A family survives by never making a sound.
+the-conjuring-2013|The Conjuring|2013|m|Ho,My|7.5|0|0|Two investigators help a family in a very wrong farmhouse.
+john-wick-2014|John Wick|2014|m|Ac,Th,Cr|7.4|0|0|A retired hitman comes back for the people who wronged him.
+hereditary-2018|Hereditary|2018|m|Ho,My,Dr|7.3|0|0|After a death, a family starts to uncover what it inherited.
+breaking-bad-2008|Breaking Bad|2008|s|Cr,Dr,Th|9.5|0|0|A chemistry teacher becomes very good at a very bad job.
+planet-earth-ii-2016|Planet Earth II|2016|s|Do,Fa|9.5|1|0|The natural world, filmed closer than ever.
+band-of-brothers-2001|Band of Brothers|2001|s|Wa,Dr|9.4|0|0|One company of paratroopers, from training to the end of the war.
+chernobyl-2019|Chernobyl|2019|s|Dr,Th|9.3|0|0|The 1986 disaster and the people sent to contain it.
+the-wire-2002|The Wire|2002|s|Cr,Dr|9.3|0|0|Baltimore, seen through its police, dealers, docks and schools.
+avatar-the-last-airbender-2005|Avatar: The Last Airbender|2005|s|An,Fn,Ad,Fa|9.3|1|0|A boy who bends all four elements has a war to end.
+bluey-2018|Bluey|2018|s|An,Fa,Co|9.3|1|0|A blue heeler pup turns every day into a game.
+the-sopranos-1999|The Sopranos|1999|s|Cr,Dr|9.2|0|0|A mob boss starts seeing a therapist.
+game-of-thrones-2011|Game of Thrones|2011|s|Fn,Dr,Ad|9.2|0|0|Noble families fight for a throne while winter closes in.
+our-planet-2019|Our Planet|2019|s|Do,Fa|9.2|1|0|Wild places around the world and how they are changing.
+rick-and-morty-2013|Rick and Morty|2013|s|An,Sf,Co|9.1|0|0|A reckless scientist drags his grandson across dimensions.
+attack-on-titan-2013|Attack on Titan|2013|s|An,Ac,Fn|9.1|0|0|Humanity hides behind walls from giants, until the walls fail.
+sherlock-2010|Sherlock|2010|s|My,Cr,Dr|9.0|1|0|Holmes and Watson solve cases in present-day London.
+arcane-2021|Arcane|2021|s|An,Ac,Fn|9.0|0|0|Two sisters end up on opposite sides of a divided city.
+better-call-saul-2015|Better Call Saul|2015|s|Cr,Dr|9.0|0|0|A small-time lawyer bends the rules until they break.
+the-office-2005|The Office|2005|s|Co|9.0|1|0|Daily life at a paper company with a boss who tries too hard.
+the-last-dance-2020|The Last Dance|2020|s|Do|9.0|0|0|Michael Jordan and the Bulls chase a sixth title.
+true-detective-2014|True Detective|2014|s|Cr,My,Dr|8.9|0|0|Two detectives and a case that follows them for years.
+friends-1994|Friends|1994|s|Co,Ro|8.9|1|0|Six friends, one coffee shop, ten years in New York.
+fargo-2014|Fargo|2014|s|Cr,Dr,Th|8.9|0|0|Polite people in cold towns make terrible decisions.
+gravity-falls-2012|Gravity Falls|2012|s|An,Fa,My,Co|8.9|1|0|Twins spend a summer in a town full of secrets.
+death-note-2006|Death Note|2006|s|An,Th,My|8.9|0|0|A student finds a notebook that kills, and a detective finds him.
+succession-2018|Succession|2018|s|Dr,Co|8.8|0|0|A media dynasty's children fight over who takes the chair.
+ted-lasso-2020|Ted Lasso|2020|s|Co,Dr|8.8|0|0|An American football coach takes over an English soccer club.
+peaky-blinders-2013|Peaky Blinders|2013|s|Cr,Dr|8.7|0|0|A Birmingham gang climbs after the First World War.
+dark-2017|Dark|2017|s|Sf,My,Th|8.7|0|0|A missing child exposes a town knotted through time.
+black-mirror-2011|Black Mirror|2011|s|Sf,Th,Dr|8.7|0|0|Stand-alone stories about technology going one step too far.
+severance-2022|Severance|2022|s|Sf,My,Th|8.7|0|0|Office workers have their work and home memories split apart.
+fleabag-2016|Fleabag|2016|s|Co,Dr|8.7|0|0|A sharp, messy Londoner talks straight to the camera.
+narcos-2015|Narcos|2015|s|Cr,Dr|8.7|0|0|The rise of the Colombian cartels and the agents chasing them.
+downton-abbey-2010|Downton Abbey|2010|s|Dr,Ro|8.7|1|0|An English estate, upstairs and downstairs, through changing times.
+stranger-things-2016|Stranger Things|2016|s|Sf,Ho,My|8.6|0|0|A boy vanishes and his friends find a girl with powers.
+the-mandalorian-2019|The Mandalorian|2019|s|Sf,Ac,Ad|8.6|1|0|A lone bounty hunter ends up protecting a small green child.
+the-last-of-us-2023|The Last of Us|2023|s|Dr,Ho,Ac|8.6|0|0|A smuggler escorts a teenager across a ruined America.
+parks-and-recreation-2009|Parks and Recreation|2009|s|Co|8.6|1|0|An endlessly upbeat official runs a small-town parks office.
+mindhunter-2017|Mindhunter|2017|s|Cr,Th,My|8.6|0|0|FBI agents interview killers to learn how they think.
+the-crown-2016|The Crown|2016|s|Dr|8.6|1|0|The reign of Elizabeth II, decade by decade.
+shogun-2024|Shōgun|2024|s|Dr,Ad,Wa|8.6|0|0|A shipwrecked English pilot lands in feudal Japan's power struggle.
+yellowstone-2018|Yellowstone|2018|s|We,Dr|8.6|0|0|A ranching family defends the largest ranch in Montana.
+the-boys-2019|The Boys|2019|s|Ac,Co,Sf|8.6|0|0|A scrappy crew takes on corrupt celebrity superheroes.
+the-bear-2022|The Bear|2022|s|Dr,Co|8.5|0|0|A fine-dining chef comes home to run the family sandwich shop.
+the-queen-s-gambit-2020|The Queen's Gambit|2020|s|Dr|8.5|0|0|An orphan with a gift for chess climbs to the top.
+the-haunting-of-hill-house-2018|The Haunting of Hill House|2018|s|Ho,Dr,My|8.5|0|0|Grown siblings are pulled back to the house that marked them.
+modern-family-2009|Modern Family|2009|s|Co,Fa|8.5|1|0|Three branches of one big family, filmed like a documentary.
+brooklyn-nine-nine-2013|Brooklyn Nine-Nine|2013|s|Co,Cr|8.4|1|0|A goofy detective and a by-the-book captain run a precinct.
+normal-people-2020|Normal People|2020|s|Ro,Dr|8.4|0|0|Two Irish teenagers keep finding and losing each other.
+westworld-2016|Westworld|2016|s|Sf,We,My|8.4|0|0|The android hosts of a theme park start to remember.
+house-of-the-dragon-2022|House of the Dragon|2022|s|Fn,Dr,Ac|8.3|0|0|The Targaryens tear themselves apart over succession.
+lost-2004|Lost|2004|s|My,Ad,Sf|8.3|1|0|Plane crash survivors find their island is not empty.
+money-heist-2017|Money Heist|2017|s|Cr,Ac,Th|8.2|0|0|A mastermind and eight thieves take over the Royal Mint.
+the-good-place-2016|The Good Place|2016|s|Co,Fn|8.2|1|0|A woman lands in the afterlife by clerical error.
+only-murders-in-the-building-2021|Only Murders in the Building|2021|s|Co,My,Cr|8.1|0|0|Three neighbours start a podcast about a death in their building.
+squid-game-2021|Squid Game|2021|s|Th,Dr,Ac|8.0|0|0|Players in debt compete in children's games for a fortune.
+the-witcher-2019|The Witcher|2019|s|Fn,Ac,Ad|7.9|0|0|A monster hunter is tied by fate to a princess and a sorceress.
+bridgerton-2020|Bridgerton|2020|s|Ro,Dr|7.4|0|0|London's marriage season, with gossip in print.`;
+const OLD={"whiplash-2014": "tt2582802", "wall-e-2008": "tt0910970", "up-2009": "tt1049413", "toy-story-1995": "tt0114709", "top-gun-maverick-2022": "tt1745960", "my-neighbor-totoro-1988": "tt0096283", "the-wolf-of-wall-street-2013": "tt0993846", "the-usual-suspects-1995": "tt0114814", "the-truman-show-1998": "tt0120382", "the-silence-of-the-lambs-1991": "tt0102926", "the-shining-1980": "tt0081505", "the-shawshank-redemption-1994": "tt0111161", "the-prestige-2006": "tt0482571", "the-matrix-1999": "tt0133093", "the-lord-of-the-rings-the-return-of-the-king-2003": "tt0167260", "the-lord-of-the-rings-the-fellowship-of-the-ring-2001": "tt0120737", "the-lion-king-1994": "tt0110357", "the-incredibles-2004": "tt0317705", "the-green-mile-1999": "tt0120689", "the-grand-budapest-hotel-2014": "tt2278388", "the-godfather-1972": "tt0068646", "the-departed-2006": "tt0407887", "the-dark-knight-2008": "tt0468569", "the-big-lebowski-1998": "tt0118715", "spotlight-2015": "tt1895587", "spider-man-into-the-spider-verse-2018": "tt4633694", "shutter-island-2010": "tt1130884", "spirited-away-2001": "tt0245429", "se7en-1995": "tt0114369", "schindler-s-list-1993": "tt0108052", "saving-private-ryan-1998": "tt0120815", "rear-window-1954": "tt0047396", "ratatouille-2007": "tt0382932", "raiders-of-the-lost-ark-1981": "tt0082971", "pulp-fiction-1994": "tt0110912", "prisoners-2013": "tt1392214", "pirates-of-the-caribbean-the-curse-of-the-black-pearl-2003": "tt0325980", "oldboy-2003": "tt0364569", "no-country-for-old-men-2007": "tt0477348", "princess-mononoke-1997": "tt0119698", "memento-2000": "tt0209144", "mad-max-fury-road-2015": "tt1392190", "amelie-2001": "tt0211915", "your-name-2016": "tt5311514", "jurassic-park-1993": "tt0107290", "joker-2019": "tt7286456", "a-separation-2011": "tt1832382", "interstellar-2014": "tt0816692", "inside-out-2015": "tt2096673", "inglourious-basterds-2009": "tt0361748", "inception-2010": "tt1375666", "the-good-the-bad-and-the-ugly-1966": "tt0060196", "how-to-train-your-dragon-2010": "tt0892769", "heat-1995": "tt0113277", "hacksaw-ridge-2016": "tt2119532", "groundhog-day-1993": "tt0107048", "goodfellas-1990": "tt0099685", "good-will-hunting-1997": "tt0119217", "gone-girl-2014": "tt2267998", "gladiator-2000": "tt0172495", "parasite-2019": "tt6751668", "forrest-gump-1994": "tt0109830", "ford-v-ferrari-2019": "tt1950186", "fight-club-1999": "tt0137523", "everything-everywhere-all-at-once-2022": "tt6710474", "eternal-sunshine-of-the-spotless-mind-2004": "tt0338013", "pan-s-labyrinth-2006": "tt0457430", "django-unchained-2012": "tt1853728", "die-hard-1988": "tt0095016", "coco-2017": "tt2380307", "city-of-god-2002": "tt0317248", "catch-me-if-you-can-2002": "tt0264464", "casablanca-1942": "tt0034583", "before-sunrise-1995": "tt0112471", "back-to-the-future-1985": "tt0088763", "avengers-endgame-2019": "tt4154796", "alien-1979": "tt0078748", "1917-2019": "tt8579674", "12-angry-men-1957": "tt0050083"};
 const slug=(t,y)=>(t+'-'+y).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-const BASE=RAW.split('\n').map(l=>{const[t,y,k,g,r,f,h]=l.split('|');return{id:slug(t,y),t,y:+y,k,g:g.split(','),r:+r,f:f==='1',h}});
+const norm=t=>String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'');
+const BASE=RAW.split('\n').map(l=>{const[id,t,y,k,g,r,fm,top,h]=l.split('|');return{id,t,y:+y,k,g:g.split(','),r:+r,f:fm==='1',top:top==='1',h,tt:/^tt\d+$/.test(id)?id:''}});
 
-/* ---------- state ---------- */
-const DEF={v:1,onboarded:false,likes:{},mode:'solo',kind:'all',theme:'dark',ratings:{},seen:{},watch:{},skipped:{},custom:[],libSort:'imdb',libGroup:'genre',wlSort:'added',ts:0};
+/* ---------- storage, profiles, state ---------- */
+const DEF={v:2,onboarded:false,likes:{},mode:'solo',kind:'all',theme:'dark',ratings:{},seen:{},watch:{},skipped:{},meta:{},custom:[],libSrc:'',libSort:'imdb',libSortLive:'pop',libGroup:'genre',wlSort:'added',ts:0};
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const clone=o=>JSON.parse(JSON.stringify(o));
-function hydrate(o){const s=Object.assign(clone(DEF),o||{});for(const k of['likes','ratings','seen','watch','skipped'])if(!s[k]||typeof s[k]!=='object')s[k]={};if(!Array.isArray(s.custom))s.custom=[];return s}
-let S;try{S=hydrate(JSON.parse(LS.get('fd.state')||'null'))}catch(e){S=hydrate(null)}
-function save(){S.ts=Date.now();LS.set('fd.state',JSON.stringify(S));cloudQueue()}
+const jget=(k,d)=>{try{const v=JSON.parse(LS.get(k)||'null');return v===null?d:v}catch(e){return d}};
+function hydrate(o){
+  const s=Object.assign(clone(DEF),o||{});
+  for(const k of['likes','ratings','seen','watch','skipped','meta'])if(!s[k]||typeof s[k]!=='object'||Array.isArray(s[k]))s[k]={};
+  if(!Array.isArray(s.custom))s.custom=[];
+  for(const k of['ratings','seen','watch','skipped'])for(const id of Object.keys(s[k]))if(OLD[id]){s[k][OLD[id]]=s[k][id];delete s[k][id]}
+  if(!['solo','partner','friends','family'].includes(s.mode))s.mode='solo';
+  for(const id of Object.keys(s.meta)){if(s.meta[id]&&typeof s.meta[id]==='object')s.meta[id].id=id;else delete s.meta[id]}
+  s.v=2;return s;
+}
+let P=[],pid=null,S=hydrate(null);
+const AVC=['#ffb52e','#ff7ac3','#5ed4f4','#49d6a4','#b79cff','#ff8a5c'];
+const sKey=id=>'fd.state.'+id;
+function loadProfiles(){P=jget('fd.profiles',[]);if(!Array.isArray(P))P=[];pid=LS.get('fd.session');if(!P.some(p=>p.id===pid))pid=null}
+function saveProfiles(){LS.set('fd.profiles',JSON.stringify(P));LS.set('fd.ts',String(Date.now()));cloudQueue()}
+function save(){
+  if(!pid)return;
+  for(const id of Object.keys(S.meta))if(!(S.watch[id]||S.seen[id]||S.ratings[id]))delete S.meta[id];
+  S.ts=Date.now();LS.set(sKey(pid),JSON.stringify(S));LS.set('fd.ts',String(S.ts));LS.set('fd.theme',S.theme);cloudQueue();
+}
+async function hashPin(id,pin){
+  const s=id+':'+pin;
+  try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+  catch(e){let h=5381;for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return'x'+h.toString(16)}
+}
 
-/* cloud copy: keeps ratings and Watchlist safe when the page is opened inside Claude */
+/* cloud copy: keeps profiles safe when the page is opened inside Claude */
 let cloudDoc=null,cloudT=0,cloudBusy=false,cloudDirty=false;
+function bundle(){const states={};for(const p of P){const s=jget(sKey(p.id),null);if(s)states[p.id]=s}return{v:2,profiles:P,states,ts:+LS.get('fd.ts')||0}}
 async function cloudInit(){
   if(!window.claude||typeof window.claude.use!=='function')return;
   try{
@@ -696,101 +935,124 @@ async function cloudInit(){
     if(!db||!user)return;
     const uid=await user.id();if(!uid)return;
     cloudDoc=db.doc('data/users/'+uid+'/flickdeck');
-    const snap=await cloudDoc.get();
-    const remote=snap.exists&&snap.data()&&snap.data().state;
-    if(remote&&(remote.ts||0)>(S.ts||0)){S=hydrate(clone(remote));LS.set('fd.state',JSON.stringify(S));boot(true)}
-    else if(S.ts)cloudQueue();
+    const snap=await cloudDoc.get(),r=snap.exists?snap.data():null,mine=+LS.get('fd.ts')||0;
+    if(r&&r.v===2&&Array.isArray(r.profiles)&&(r.ts||0)>mine){
+      const rr=clone(r);LS.set('fd.profiles',JSON.stringify(rr.profiles));
+      for(const id in rr.states)LS.set(sKey(id),JSON.stringify(rr.states[id]));
+      LS.set('fd.ts',String(rr.ts));start();
+    }else if(r&&r.state&&!P.length&&!LS.get('fd.state')){LS.set('fd.state',JSON.stringify(r.state))}
+    else if(mine)cloudQueue();
   }catch(e){cloudDoc=null}
 }
 function cloudQueue(){if(!cloudDoc)return;cloudDirty=true;clearTimeout(cloudT);cloudT=setTimeout(cloudFlush,1600)}
 async function cloudFlush(){
   if(!cloudDoc||cloudBusy||!cloudDirty)return;
   cloudBusy=true;cloudDirty=false;
-  try{await cloudDoc.set({state:clone(S)})}catch(e){if(e&&(e.code==='invalid_argument'||e.code==='revoked'||e.code==='not_granted'))cloudDoc=null}
+  try{await cloudDoc.set(clone(bundle()))}catch(e){if(e&&(e.code==='invalid_argument'||e.code==='revoked'||e.code==='not_granted'))cloudDoc=null}
   cloudBusy=false;if(cloudDirty)cloudQueue();
 }
 
-/* ---------- helpers ---------- */
-let IDX={};
+/* ---------- lookups ---------- */
+let IDX={};const MEM=new Map(),ALIAS=new Map(),OV={};
 const titles=()=>BASE.concat(S.custom);
+const get=id=>IDX[id]||MEM.get(id)||S.meta[id]||null;
 const kindName=m=>m.k==='s'?'Series':'Film';
+const yr=m=>m.y||'Year Unknown';
 const isSeen=id=>!!(S.seen[id]||S.ratings[id]);
 const likeCls=g=>(S.likes[g]||0)>0?'love':(S.likes[g]||0)<0?'nope':'';
 const gl=m=>m.g.map(g=>G[g]).join(', ');
+function keep(id){const m=get(id);if(m&&m.x&&!IDX[id])S.meta[id]={t:m.t,y:m.y,k:m.k,g:m.g,r:m.r,f:m.f,p:m.p,o:(m.o||'').slice(0,400),x:m.x,id}}
 
 /* ---------- drawn poster art ---------- */
 function rng(seed){let h=2166136261;for(let i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619)}return()=>{h^=h<<13;h^=h>>>17;h^=h<<5;return((h>>>0)%100000)/100000}}
-const f=n=>n.toFixed(1);
+const f=n=>(+n).toFixed(1);
 const MOTIF={
  Ac:(R,c)=>{let s='';for(let i=0;i<7;i++)s+=`<rect x="-80" y="${f(i*48+R()*24-20)}" width="380" height="${f(6+R()*16)}" fill="${i===3?c:'#fff'}" opacity="${f(.14+R()*.3)}" transform="rotate(-24 100 150)"/>`;return s},
  Ad:(R,c)=>`<circle cx="${f(60+R()*80)}" cy="${f(70+R()*30)}" r="34" fill="${c}" opacity=".9"/><polygon points="-10,300 ${f(50+R()*30)},150 130,300" fill="#000" opacity=".35"/><polygon points="60,300 ${f(130+R()*30)},120 215,300" fill="#000" opacity=".5"/><polygon points="20,300 90,210 160,300" fill="#fff" opacity=".12"/>`,
  An:(R,c)=>{let s='';for(let i=0;i<7;i++)s+=`<circle cx="${f(R()*200)}" cy="${f(R()*210)}" r="${f(14+R()*38)}" fill="${i%3?'#fff':c}" opacity="${f(.2+R()*.4)}"/>`;return s},
  Co:(R,c)=>{let s='';const cs=['#fff',c,'#1b1530'];for(let i=0;i<30;i++){const x=R()*200,y=R()*230;s+=i%2?`<circle cx="${f(x)}" cy="${f(y)}" r="${f(2+R()*4)}" fill="${cs[i%3]}" opacity=".8"/>`:`<rect x="${f(x)}" y="${f(y)}" width="12" height="5" rx="2" fill="${cs[i%3]}" opacity=".8" transform="rotate(${f(R()*180)} ${f(x)} ${f(y)})"/>`}return s},
  Cr:(R,c)=>{let s=`<polygon points="${f(40+R()*60)},0 ${f(120+R()*60)},0 ${f(60+R()*90)},300 ${f(R()*40)},300" fill="${c}" opacity=".28"/>`;for(let i=0;i<13;i++)s+=`<rect x="0" y="${i*24+6}" width="200" height="13" fill="#000" opacity=".42"/>`;return s},
- Do:(R,c)=>{const y=f(105+R()*20);return`<g fill="none" stroke="#fff" stroke-width="1.6" opacity=".6"><circle cx="100" cy="${y}" r="70"/><ellipse cx="100" cy="${y}" rx="34" ry="70"/><ellipse cx="100" cy="${y}" rx="70" ry="26"/><line x1="30" y1="${y}" x2="170" y2="${y}"/><line x1="100" y1="${f(y-70)}" x2="100" y2="${f(+y+70)}"/></g><circle cx="${f(60+R()*80)}" cy="${f(+y-20+R()*40)}" r="7" fill="${c}"/>`},
- Dr:(R,c)=>{const x=f(70+R()*60);return`<polygon points="${x},-10 ${f(+x-70)},250 ${f(+x+70)},250" fill="#fff" opacity=".14"/><ellipse cx="${x}" cy="250" rx="70" ry="14" fill="#fff" opacity=".28"/><circle cx="${x}" cy="222" r="9" fill="${c}"/><rect x="${f(+x-5)}" y="230" width="10" height="20" rx="4" fill="${c}"/>`},
+ Do:(R,c)=>{const y=105+R()*20;return`<g fill="none" stroke="#fff" stroke-width="1.6" opacity=".6"><circle cx="100" cy="${f(y)}" r="70"/><ellipse cx="100" cy="${f(y)}" rx="34" ry="70"/><ellipse cx="100" cy="${f(y)}" rx="70" ry="26"/><line x1="30" y1="${f(y)}" x2="170" y2="${f(y)}"/><line x1="100" y1="${f(y-70)}" x2="100" y2="${f(y+70)}"/></g><circle cx="${f(60+R()*80)}" cy="${f(y-20+R()*40)}" r="7" fill="${c}"/>`},
+ Dr:(R,c)=>{const x=70+R()*60;return`<polygon points="${f(x)},-10 ${f(x-70)},250 ${f(x+70)},250" fill="#fff" opacity=".14"/><ellipse cx="${f(x)}" cy="250" rx="70" ry="14" fill="#fff" opacity=".28"/><circle cx="${f(x)}" cy="222" r="9" fill="${c}"/><rect x="${f(x-5)}" y="230" width="10" height="20" rx="4" fill="${c}"/>`},
  Fa:(R,c)=>{let s='';const cs=['#fff',c,'#ffd23f','#ff7ac3'];for(let i=0;i<4;i++){const x=40+i*40+R()*14,y=60+R()*70,r=20+R()*8;s+=`<line x1="${f(x)}" y1="${f(y+r)}" x2="${f(100+(x-100)*.25)}" y2="270" stroke="#fff" stroke-width="1.2" opacity=".6"/><ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(r*.86)}" ry="${f(r)}" fill="${cs[i]}" opacity=".88"/>`}return s},
  Fn:(R,c)=>{let s='';for(let i=0;i<22;i++)s+=`<circle cx="${f(R()*200)}" cy="${f(R()*200)}" r="${f(.8+R()*1.9)}" fill="#fff" opacity="${f(.5+R()*.5)}"/>`;const x=60+R()*80,y=70+R()*40;return s+`<circle cx="${f(x)}" cy="${f(y)}" r="36" fill="#fff" opacity=".92"/><circle cx="${f(x+15)}" cy="${f(y-9)}" r="32" fill="#2a2a7a"/><circle cx="${f(x-48+R()*20)}" cy="${f(y+62)}" r="5" fill="${c}"/>`},
+ Hi:(R,c)=>{let s=`<polygon points="30,96 100,${f(40+R()*20)} 170,96" fill="#fff" opacity=".5"/><rect x="26" y="96" width="148" height="10" fill="#fff" opacity=".6"/>`;for(let i=0;i<5;i++)s+=`<rect x="${36+i*30}" y="110" width="12" height="140" fill="#fff" opacity="${f(.3+R()*.3)}"/>`;return s+`<rect x="20" y="250" width="160" height="10" fill="#fff" opacity=".5"/><circle cx="${f(40+R()*120)}" cy="${f(60+R()*20)}" r="6" fill="${c}"/>`},
  Ho:(R,c)=>{let t='0,0 ',b='0,300 ';for(let i=0;i<=8;i++){t+=`${i*25},${f(i%2?52+R()*46:8)} `;b+=`${i*25},${f(i%2?300-58-R()*44:292)} `}return`<polygon points="${t}200,0" fill="#000" opacity=".82"/><polygon points="${b}200,300" fill="#000" opacity=".82"/><circle cx="${f(70+R()*60)}" cy="${f(135+R()*30)}" r="9" fill="${c}"/><circle cx="${f(70+R()*60)}" cy="150" r="3" fill="#fff" opacity=".8"/>`},
  Mu:(R,c)=>{let s='';for(let i=0;i<10;i++){const h=24+R()*140;s+=`<rect x="${14+i*18}" y="${f(140-h/2)}" width="10" height="${f(h)}" rx="5" fill="${i%4===1?c:'#fff'}" opacity="${f(.45+R()*.45)}"/>`}return s},
  My:(R,c)=>{const x=f(50+R()*100),y=f(90+R()*70);let s='';for(let i=1;i<=9;i++)s+=`<circle cx="${x}" cy="${y}" r="${i*17}" fill="none" stroke="#fff" stroke-width="1.6" opacity="${f(.75-i*.07)}"/>`;return s+`<circle cx="${x}" cy="${y}" r="7" fill="${c}"/>`},
- Ro:(R,c)=>{const y=f(110+R()*30);return`<circle cx="${f(74+R()*8)}" cy="${y}" r="50" fill="#fff" opacity=".4"/><circle cx="${f(122+R()*8)}" cy="${f(+y+10)}" r="50" fill="${c}" opacity=".6"/>`},
+ Ro:(R,c)=>{const y=110+R()*30;return`<circle cx="${f(74+R()*8)}" cy="${f(y)}" r="50" fill="#fff" opacity=".4"/><circle cx="${f(122+R()*8)}" cy="${f(y+10)}" r="50" fill="${c}" opacity=".6"/>`},
  Sf:(R,c)=>{const a=f(-40+R()*80);return`<g fill="none" stroke="#fff" stroke-width="1.4" opacity=".65" transform="rotate(${a} 100 120)"><ellipse cx="100" cy="120" rx="92" ry="30"/><ellipse cx="100" cy="120" rx="66" ry="20"/><ellipse cx="100" cy="120" rx="118" ry="42"/></g><circle cx="100" cy="120" r="24" fill="${c}"/><circle cx="${f(30+R()*140)}" cy="${f(50+R()*60)}" r="5" fill="#fff"/>`},
- Th:(R,c)=>{const x=f(60+R()*70);return`<rect x="${x}" y="0" width="${f(5+R()*7)}" height="300" fill="${c}" opacity=".95"/><polygon points="0,${f(40+R()*60)} 200,${f(120+R()*80)} 200,300 0,300" fill="#000" opacity=".4"/><rect x="${f(+x-30)}" y="0" width="3" height="300" fill="#fff" opacity=".2"/>`},
+ Th:(R,c)=>{const x=60+R()*70;return`<rect x="${f(x)}" y="0" width="${f(5+R()*7)}" height="300" fill="${c}" opacity=".95"/><polygon points="0,${f(40+R()*60)} 200,${f(120+R()*80)} 200,300 0,300" fill="#000" opacity=".4"/><rect x="${f(x-30)}" y="0" width="3" height="300" fill="#fff" opacity=".2"/>`},
  Wa:(R,c)=>{let s=`<circle cx="${f(50+R()*100)}" cy="${f(70+R()*30)}" r="26" fill="#fff" opacity=".3"/>`;for(let i=0;i<6;i++)s+=`<rect x="0" y="${f(150+i*26+R()*8)}" width="200" height="${f(8+R()*10)}" fill="#000" opacity="${f(.2+i*.08)}"/>`;return s+`<circle cx="${f(40+R()*120)}" cy="140" r="4" fill="${c}"/>`},
  We:(R,c)=>`<circle cx="${f(70+R()*60)}" cy="170" r="62" fill="${c}" opacity=".92"/><rect x="0" y="176" width="200" height="124" fill="#000" opacity=".45"/><polygon points="${f(10+R()*30)},178 ${f(30+R()*20)},128 ${f(80+R()*20)},128 ${f(100+R()*20)},178" fill="#000" opacity=".6"/><polygon points="130,178 142,150 176,150 190,178" fill="#000" opacity=".55"/>`
 };
-function artSVG(m){
+function artURI(m){
   const g=PAL[m.g[0]]?m.g[0]:'Dr',[a,b]=PAL[g],c=(PAL[m.g[1]]||PAL[g==='Co'?'Ro':'Co'])[0],R=rng(m.id);
-  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="${f(R())}" y1="0" x2="${f(R())}" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="200" height="300" fill="url(#g)"/>${MOTIF[g](R,c)}</svg>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="${f(R())}" y1="0" x2="${f(R())}" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="200" height="300" fill="url(#g)"/>${MOTIF[g](R,c)}</svg>`;
+  return`url('data:image/svg+xml,${encodeURIComponent(svg).replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/'/g,'%27')}')`;
 }
-function injectArt(){
-  let css='';
-  for(const m of titles())css+=`.a-${m.id}{background-image:url('data:image/svg+xml,${encodeURIComponent(artSVG(m)).replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/'/g,'%27')}')}`;
+function reindex(){
+  IDX={};ALIAS.clear();let css='';
+  for(const m of titles()){
+    IDX[m.id]=m;css+=`.a-${m.id}{background-image:${artURI(m)}}`;
+    const k=norm(m.t)+'|'+m.k;if(!ALIAS.has(k))ALIAS.set(k,[]);ALIAS.get(k).push([m.y,m.id]);
+  }
   $('#art-css').textContent=css;
 }
-function reindex(){IDX={};for(const m of titles())IDX[m.id]=m;injectArt()}
 function art(m){
   const n=m.t.length,w=Math.max(...m.t.split(/[\s-]+/).map(x=>x.length)),cls=n>40||w>10?' xlong':n>20||w>7?' long':'';
-  return`<span class="art a-${m.id}" data-id="${m.id}" aria-hidden="true"><span class="art-kind">${kindName(m)}</span><span class="art-title${cls}">${esc(m.t)}</span></span>`;
+  const own=!!IDX[m.id],p=Live.key?(m.p||Live.cache[m.id]||''):'';
+  return`<span class="art${own?' a-'+m.id:''}" data-id="${esc(m.id)}"${p?` data-p="${esc(p)}"`:''}${own||p?'':` style="background-image:${artURI(m)}"`} aria-hidden="true"><span class="art-kind">${kindName(m)}</span><span class="art-title${cls}">${esc(m.t)}</span></span>`;
 }
 
-/* ---------- real posters (only when hosted outside Claude, with the owner's TMDB key) ---------- */
+/* ---------- live data: TMDB (catalogue, posters) and OMDb (IMDb scores) ---------- */
 const Live={
-  key:LS.get('fd.tmdb')||'',cache:{},queue:[],busy:0,dead:false,pending:{},io:null,
-  init(){try{this.cache=JSON.parse(LS.get('fd.posters')||'{}')||{}}catch(e){this.cache={}}},
+  key:LS.get('fd.tmdb')||'',cache:jget('fd.posters',{}),queue:[],busy:0,dead:false,waiting:{},jobs:{},io:null,saveT:0,
+  get on(){return!!this.key&&!this.dead},
+  persist(){clearTimeout(this.saveT);this.saveT=setTimeout(()=>LS.set('fd.posters',JSON.stringify(this.cache)),800)},
+  req(path,params){
+    const u=new URL('https://api.themoviedb.org/3/'+path);
+    for(const k in params)if(params[k]!==undefined&&params[k]!=='')u.searchParams.set(k,params[k]);
+    const opt={};
+    if(this.key.length>60)opt.headers={Authorization:'Bearer '+this.key};else u.searchParams.set('api_key',this.key);
+    return fetch(u,opt);
+  },
+  async json(path,params){const r=await this.req(path,params||{});if(!r.ok){const e=new Error('TMDB '+r.status);e.status=r.status;throw e}return r.json()},
   scan(root){
-    if(!this.key||this.dead)return;
+    if(!this.key)return;
     if(!this.io&&'IntersectionObserver'in window)this.io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){this.io.unobserve(e.target);this.want(e.target)}},{rootMargin:'240px'});
-    $$('.art[data-id]:not(.has-img)',root||document).forEach(el=>this.io?this.io.observe(el):this.want(el));
+    $$('.art[data-id]:not(.has-img)',root||document).forEach(el=>{
+      if(el.dataset.p)this.apply(el,el.dataset.p);
+      else if(IDX[el.dataset.id]&&!this.dead)this.io?this.io.observe(el):this.want(el);
+    });
   },
   want(el){
     const id=el.dataset.id,p=this.cache[id];
     if(p){this.apply(el,p);return}
     if(p==='')return;
-    (this.pending[id]=this.pending[id]||[]).push(el);
-    if(this.pending[id].length===1){this.queue.push(id);this.pump()}
+    (this.waiting[id]=this.waiting[id]||[]).push(el);
+    if(this.waiting[id].length===1){this.queue.push(id);this.pump()}
   },
   pump(){
     while(this.busy<4&&this.queue.length&&!this.dead){
       const id=this.queue.shift();this.busy++;
-      this.lookup(id).then(p=>{this.cache[id]=p;LS.set('fd.posters',JSON.stringify(this.cache));if(p)(this.pending[id]||[]).forEach(el=>this.apply(el,p))})
-        .catch(()=>{this.dead=true}).finally(()=>{delete this.pending[id];this.busy--;this.pump()});
+      this.ensure(id).then(p=>{if(p)(this.waiting[id]||[]).forEach(el=>this.apply(el,p))}).catch(()=>{}).finally(()=>{delete this.waiting[id];this.busy--;this.pump()});
     }
   },
-  req(path,params){
-    const u=new URL('https://api.themoviedb.org/3/'+path);
-    for(const k in params)u.searchParams.set(k,params[k]);
-    const opt={};
-    if(this.key.length>60)opt.headers={Authorization:'Bearer '+this.key};else u.searchParams.set('api_key',this.key);
-    return fetch(u,opt);
-  },
-  async lookup(id){
-    const m=IDX[id];if(!m)return'';
-    const tv=m.k==='s',r=await this.req('search/'+(tv?'tv':'movie'),{query:m.t,[tv?'first_air_date_year':'year']:m.y});
-    if(!r.ok)throw new Error(r.status);
-    const hit=((await r.json()).results||[]).find(x=>x.poster_path);
-    return hit?hit.poster_path:'';
+  /* poster path and plot for a built-in title, fetched once per session */
+  ensure(id){
+    if(this.jobs[id])return this.jobs[id];
+    return this.jobs[id]=(async()=>{
+      const m=IDX[id];if(!m||!this.on)return this.cache[id]||'';
+      let hit=null;
+      try{
+        if(m.tt){const j=await this.json('find/'+m.tt,{external_source:'imdb_id',language:'en-US'});hit=(j.movie_results||[])[0]||(j.tv_results||[])[0]||null}
+        else{const tv=m.k==='s',j=await this.json('search/'+(tv?'tv':'movie'),{query:m.t,[tv?'first_air_date_year':'year']:m.y,language:'en-US'});hit=(j.results||[]).find(x=>x.poster_path)||(j.results||[])[0]||null}
+      }catch(e){if(!e.status||e.status===401)this.dead=true;delete this.jobs[id];throw e}
+      const p=hit&&hit.poster_path||'';
+      if(hit){if(hit.overview)OV[id]=hit.overview;if(hit.id)m.x=hit.id}
+      this.cache[id]=p;this.persist();return p;
+    })();
   },
   apply(el,p){
     if(el.querySelector('img'))return;
@@ -799,6 +1061,62 @@ const Live={
     img.src='https://image.tmdb.org/t/p/w342'+p;el.appendChild(img);
   }
 };
+function liveItem(r,k){
+  k=k||(r.media_type==='tv'?'s':r.media_type==='movie'?'m':'');
+  if(!k||!r||!r.id)return null;
+  const t=k==='s'?r.name:r.title,d=k==='s'?r.first_air_date:r.release_date,y=d?+String(d).slice(0,4):0;
+  if(!t)return null;
+  const al=ALIAS.get(norm(t)+'|'+k),hit=al&&al.find(e=>Math.abs(e[0]-y)<=1);
+  if(hit){
+    const b=IDX[hit[1]];
+    if(r.poster_path&&!Live.cache[b.id]){Live.cache[b.id]=r.poster_path;Live.persist()}
+    if(r.overview&&!OV[b.id])OV[b.id]=r.overview;if(!b.x)b.x=r.id;
+    return b;
+  }
+  const id=k+r.id,g=[];
+  (r.genre_ids||[]).forEach(i=>(k==='s'?GT[i]||[]:GM[i]?[GM[i]]:[]).forEach(c=>{if(!g.includes(c))g.push(c)}));
+  if(!g.length)g.push('Dr');
+  const m={id,t,y,k,g,r:r.vote_count>=20?Math.round(r.vote_average*10)/10:0,f:g.includes('Fa'),p:r.poster_path||'',o:r.overview||'',x:r.id};
+  MEM.set(id,m);return m;
+}
+const Imdb={
+  key:LS.get('fd.omdb')||'',cache:jget('fd.imdb',{}),jobs:{},dead:false,
+  get(m){
+    if(!this.key||this.dead||!m)return Promise.resolve(null);
+    if(this.cache[m.id])return Promise.resolve(this.cache[m.id]);
+    if(this.jobs[m.id])return this.jobs[m.id];
+    return this.jobs[m.id]=(async()=>{
+      try{
+        let tt=m.tt||'';
+        if(!tt&&m.x&&Live.on){const j=await Live.json((m.k==='s'?'tv':'movie')+'/'+m.x+'/external_ids',{});tt=j.imdb_id||''}
+        const u=new URL('https://www.omdbapi.com/');u.searchParams.set('apikey',this.key);
+        if(tt)u.searchParams.set('i',tt);else{u.searchParams.set('t',m.t);if(m.y)u.searchParams.set('y',m.y);u.searchParams.set('type',m.k==='s'?'series':'movie')}
+        const r=await fetch(u);if(r.status===401){this.dead=true;return null}
+        const j=await r.json(),v=parseFloat(j.imdbRating);
+        if(v>0){this.cache[m.id]=v;LS.set('fd.imdb',JSON.stringify(this.cache));return v}
+        return null;
+      }catch(e){return null}finally{delete this.jobs[m.id]}
+    })();
+  }
+};
+/* the public score shown for a title: live IMDb if known, else built-in IMDb, else TMDB */
+function sc(m){const c=Imdb.cache[m.id];if(c)return{v:c,l:'IMDb'};if(m.r)return{v:m.r,l:m.x&&!IDX[m.id]?'TMDB':'IMDb'};return null}
+function scHTML(m,fmt){
+  const s=sc(m);
+  if(fmt==='box')return`<span class="lbl">${s?s.l:'Public Score'}</span><b>${s?nf1.format(s.v):'–'}</b>`;
+  if(fmt==='row')return`${s?nf1.format(s.v):'–'}<small>${s?s.l:'Score'}</small>`;
+  if(fmt==='big')return`<b>${s?nf1.format(s.v):'–'}</b><span class="meta">${s?'on '+s.l:'No Score Yet'}</span>`;
+  if(fmt==='mini')return s?`${s.l}&nbsp;${nf1.format(s.v)}`:'No Score';
+  return s?`${s.l}&nbsp;${nf1.format(s.v)}`:'';
+}
+const scEl=(m,fmt,tag='span',cls='')=>`<${tag} class="${cls}" data-sc="${esc(m.id)}" data-fmt="${fmt}">${scHTML(m,fmt)}</${tag}>`;
+function paint(id){const m=get(id);if(m)$$('[data-sc]').forEach(el=>{if(el.dataset.sc===id)el.innerHTML=scHTML(m,el.dataset.fmt)})}
+function liveScore(id){const m=get(id);if(m&&Imdb.key&&!Imdb.cache[id])Imdb.get(m).then(v=>{if(v)paint(id)})}
+function hookText(m){return m.h||m.o||OV[m.id]||''}
+function fillHook(id){
+  const m=get(id);if(!m||hookText(m)||!IDX[id]||!Live.on)return;
+  Live.ensure(id).then(()=>{const t=hookText(m);if(t)$$('[data-hook]').forEach(el=>{if(el.dataset.hook===id){el.textContent=t;el.hidden=false}})}).catch(()=>{});
+}
 
 /* ---------- toast, confetti, bulbs ---------- */
 let toastT;
@@ -820,15 +1138,15 @@ function burst(x,y){
 const bulbs=$('#bulbs');bulbs.innerHTML=Array.from({length:14},(_,i)=>`<i style="--i:${i}"></i>`).join('');
 function runBulbs(){bulbs.classList.remove('run');void bulbs.offsetWidth;bulbs.classList.add('run')}
 function badge(pop){
-  const n=Object.keys(S.watch).filter(id=>IDX[id]).length,b=$('#wl-badge');
+  const n=Object.keys(S.watch).filter(id=>get(id)).length,b=$('#wl-badge');
   b.hidden=!n;b.textContent=nf0.format(n);b.setAttribute('aria-label',n+' on Watchlist');
   if(pop){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}
 }
 
 /* ---------- theme ---------- */
 function applyTheme(){
-  const dark=S.theme!=='light';
-  document.documentElement.dataset.mode=dark?'dark':'light';
+  const dark=(pid?S.theme:LS.get('fd.theme'))!=='light';
+  document.documentElement.dataset.skin=dark?'dark':'light';
   $('meta[name=theme-color]').content=dark?'#100d1a':'#f1eef7';
   const b=$('#theme');b.innerHTML=ic(dark?'sun':'moon');b.setAttribute('aria-label',dark?'Switch to Light Mode':'Switch to Dark Mode');
   $('#dm').setAttribute('aria-checked',String(dark));
@@ -857,72 +1175,133 @@ const MODES={
   family:{label:'Family',boost:{Fa:2,An:1,Ad:1,Co:1},safe:true,why:'Fine for everyone on the sofa'}
 };
 const KINDS={all:'All',m:'Films',s:'Series'};
-let Q=[],deckDirty=true,busy=false,last=null,cur='deck';
-function buildDeck(){
-  const out=[],mode=MODES[S.mode]||MODES.solo;
+let Q=[],deckDirty=true,busy=false,last=null,cur='deck',deckGen=0,feeding=false,deckLoading=false,feedSt=null;
+const curMode=()=>MODES[S.mode]||MODES.solo;
+const eligible=id=>!(isSeen(id)||S.watch[id]||S.skipped[id]);
+function rank(m,mode){
+  let liked=0,disliked=0,v=0;
+  for(const g of m.g){const p=S.likes[g]||0;if(p>0)liked++;if(p<0)disliked++;v+=mode.boost[g]||0}
+  if(disliked&&!liked)return null;
+  return v+liked*3-disliked*4+(m.r?(m.r-7)*1.3:0)+Math.random()*2.6;
+}
+function localDeck(){
+  const out=[],mode=curMode();
   for(const m of titles()){
     if(S.kind!=='all'&&m.k!==S.kind)continue;
-    if(isSeen(m.id)||S.watch[m.id]||S.skipped[m.id])continue;
-    if(mode.safe&&!m.f)continue;
-    let liked=0,disliked=0,sc=0;
-    for(const g of m.g){const p=S.likes[g]||0;if(p>0)liked++;if(p<0)disliked++;sc+=mode.boost[g]||0}
-    if(disliked&&!liked)continue;
-    sc+=liked*3-disliked*4+(m.r?(m.r-7)*1.3:0)+Math.random()*2.6;
-    out.push([sc,m.id]);
+    if(!eligible(m.id)||(mode.safe&&!m.f))continue;
+    const v=rank(m,mode);if(v!==null)out.push([v,m.id]);
   }
-  out.sort((a,b)=>b[0]-a[0]);Q=out.map(x=>x[1]);deckDirty=false;last=null;
+  return out.sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
+}
+function deckParams(k){
+  const mode=curMode(),ids=GID[k],p={language:'en-US',include_adult:'false',sort_by:'popularity.desc','vote_count.gte':k==='s'?150:400,'vote_average.gte':6.3};
+  const uniq=a=>[...new Set(a.filter(Boolean))];
+  let want=uniq(Object.keys(S.likes).filter(g=>S.likes[g]>0).map(g=>ids[g]));
+  const not=uniq(Object.keys(S.likes).filter(g=>S.likes[g]<0).map(g=>ids[g])).filter(i=>!want.includes(i));
+  if(mode.safe){
+    if(k==='m'){p.certification_country='US';p['certification.lte']='PG';not.push(27)}
+    else want=want.length?want.filter(i=>i!==80):[10751,10762];
+    if(k==='s'&&!want.includes(10751)&&!want.includes(10762))want=[10751,10762];
+  }else if(!want.length)want=uniq(Object.keys(mode.boost).map(g=>ids[g]));
+  if(want.length)p.with_genres=want.join('|');
+  if(not.length)p.without_genres=uniq(not).join(',');
+  return p;
+}
+async function feed(gen){
+  if(feeding||!feedSt)return;
+  feeding=true;
+  try{
+    const mode=curMode();
+    for(let tries=0,added=0;tries<4&&added<10;tries++){
+      const kinds=(S.kind==='all'?['m','s']:[S.kind]).filter(k=>!feedSt.done[k]);
+      if(!kinds.length)break;
+      const got=await Promise.all(kinds.map(async k=>{
+        const page=++feedSt.page[k],j=await Live.json('discover/'+(k==='s'?'tv':'movie'),Object.assign(deckParams(k),{page}));
+        if(!(j.results||[]).length||page>=Math.min(j.total_pages||1,500))feedSt.done[k]=true;
+        return(j.results||[]).map(r=>liveItem(r,k)).filter(Boolean);
+      }));
+      if(gen!==deckGen)return;
+      const batch=[];
+      for(const m of got.flat()){
+        if(!eligible(m.id)||Q.includes(m.id)||batch.some(b=>b[1]===m.id))continue;
+        const v=rank(m,mode);if(v!==null)batch.push([v,m.id]);
+      }
+      batch.sort((a,b)=>b[0]-a[0]).forEach(b=>Q.push(b[1]));added+=batch.length;
+    }
+  }finally{feeding=false}
+}
+async function buildDeck(){
+  const gen=++deckGen;deckDirty=false;last=null;Q=[];feedSt=null;
+  if(Live.on){
+    deckLoading=true;renderStack(true);
+    const start=Math.floor(Math.random()*3);
+    feedSt={page:{m:start,s:start},done:{}};
+    try{await feed(gen);if(gen!==deckGen)return;if(!Q.length&&start){feedSt={page:{m:0,s:0},done:{}};await feed(gen);if(gen!==deckGen)return}}
+    catch(e){if(gen!==deckGen)return;feedSt=null}
+    deckLoading=false;
+    if(!feedSt)Q=localDeck();
+  }else Q=localDeck();
+  renderStack(true);
 }
 function why(m){
   const liked=m.g.filter(g=>(S.likes[g]||0)>0).map(g=>G[g]);
   if(liked.length)return'Because you love '+(liked.length>1?liked.slice(0,-1).join(', ')+' and '+liked[liked.length-1]:liked[0]);
-  return(MODES[S.mode]||MODES.solo).why;
+  return curMode().why;
 }
 function cardEl(m){
-  const el=document.createElement('article');el.className='card';el.dataset.id=m.id;el.setAttribute('aria-label',`${m.t}, ${m.y}, ${kindName(m)}`);
+  const el=document.createElement('article');el.className='card';el.dataset.id=m.id;el.setAttribute('aria-label',`${m.t}, ${yr(m)}, ${kindName(m)}`);
+  const hk=hookText(m);
   el.innerHTML=`<div class="card-in">
-   <div class="face front">${art(m)}${m.r?`<span class="imdb-chip">IMDb&nbsp;${nf1.format(m.r)}</span>`:''}
-     <div class="cap"><div class="cap-t">${esc(m.t)}</div><div class="cap-m">${m.y} · ${kindName(m)} · ${gl(m)}</div><div class="cap-w">${esc(why(m))}</div></div>
+   <div class="face front">${art(m)}${scEl(m,'chip','span','imdb-chip')}
+     <div class="cap"><div class="cap-t">${esc(m.t)}</div><div class="cap-m">${yr(m)} · ${kindName(m)} · ${gl(m)}</div><div class="cap-w">${esc(why(m))}</div></div>
      <span class="stamp s-right">Watchlist</span><span class="stamp s-left">Skip</span><span class="stamp s-up">Seen It</span></div>
-   <div class="face back"><p class="meta">${m.y} · ${kindName(m)}${m.f?' · Family-Friendly':''}</p><h3>${esc(m.t)}</h3>
-     <p class="hook">${esc(m.h||'You added this one yourself.')}</p>
-     <div class="tags">${m.g.map(g=>`<span class="tag ${likeCls(g)}">${G[g]}</span>`).join('')}</div>
-     <div class="big"><b>${m.r?nf1.format(m.r):'–'}</b><span class="meta">on IMDb</span></div>
+   <div class="face back"><p class="meta">${yr(m)} · ${kindName(m)}${m.f?' · Family-Friendly':''}</p><h3>${esc(m.t)}</h3>
+     <p class="hook" data-hook="${esc(m.id)}"${hk?'':' hidden'}>${esc(hk)}</p>
+     <div class="tags">${m.top?'<span class="tag top">IMDb Top 250</span>':''}${m.g.map(g=>`<span class="tag ${likeCls(g)}">${G[g]}</span>`).join('')}</div>
+     ${scEl(m,'big','div','big')}
      <p class="hint">Tap to Flip Back</p></div></div>`;
   return el;
 }
 function deckMeta(){
-  const n=Q.length;$('#deck-meta').textContent=n?`${nf0.format(n)} ${n===1?'pick':'picks'} left`:'';
+  const n=Q.length;
+  $('#deck-meta').textContent=deckLoading?'Dealing cards…':!n?'':feedSt?'Live from TMDB':`${nf0.format(n)} ${n===1?'pick':'picks'} left`;
   $('#undo').disabled=!last;
   $$('#acts .act:not(#undo)').forEach(b=>b.disabled=!n);
-  const e=$('#deck-empty'),sk=Object.keys(S.skipped).length;
-  e.hidden=n>0;$('.stack-wrap').hidden=!n;
-  if(!n)e.innerHTML=`<b>That's the Whole Reel</b><p>No picks left for this mix. ${sk?'Bring back the ones you skipped, or loosen the filters above.':'Loosen the filters above, or add your own titles under You.'}</p><div class="btn-row">${sk?`<button type="button" class="btn primary" data-unskip>Bring Back ${nf0.format(sk)} Skipped</button>`:''}<a class="btn" href="#library">Browse the Library</a></div>`;
+  const e=$('#deck-empty'),sk=Object.keys(S.skipped).length,none=!n&&!deckLoading;
+  e.hidden=!none;$('.stack-wrap').hidden=none;
+  if(none)e.innerHTML=`<b>That's the Whole Reel</b><p>No picks left for this mix. ${sk?'Bring back the ones you skipped, or loosen the filters above.':'Loosen the filters above, or change your taste under You.'}</p><div class="btn-row">${sk?`<button type="button" class="btn primary" data-unskip>Bring Back ${nf0.format(sk)} Skipped</button>`:''}<a class="btn" href="#library">Browse the Library</a></div>`;
 }
-function renderStack(fresh){
-  const st=$('#stack');st.innerHTML='';
-  Q.slice(0,3).forEach((id,i)=>{const el=cardEl(IDX[id]);el.classList.add('p'+i);if(fresh){el.classList.add('deal');el.style.setProperty('--i',i)}st.prepend(el)});
-  deckMeta();Live.scan(st);
+function topUp(){const id=Q[0];if(id){liveScore(id);fillHook(id)}}
+function fillStack(fresh){
+  const st=$('#stack'),have=$$('.card:not([data-out])',st).length;
+  for(let i=have;i<Math.min(3,Q.length);i++){
+    const m=get(Q[i]);if(!m)continue;
+    const el=cardEl(m);el.classList.add('p'+i,'deal');if(fresh)el.style.setProperty('--i',i);
+    st.prepend(el);Live.scan(el);
+  }
+  deckMeta();topUp();
 }
+function renderStack(fresh){$('#stack').innerHTML='';fillStack(fresh)}
 function renderDeckControls(){
-  $('#modes').innerHTML=Object.keys(MODES).map(k=>`<button type="button" class="opt" data-mode="${k}" aria-pressed="${S.mode===k}">${MODES[k].label}</button>`).join('');
+  $('#modes').innerHTML=Object.keys(MODES).map(k=>`<button type="button" class="opt" data-who="${k}" aria-pressed="${S.mode===k}">${MODES[k].label}</button>`).join('');
   $$('[data-kinds]').forEach(el=>el.innerHTML=Object.keys(KINDS).map(k=>`<button type="button" class="opt" data-kind="${k}" aria-pressed="${S.kind===k}">${KINDS[k]}</button>`).join(''));
 }
 function act(kind,origin){
   if(kind==='undo')return undo();
-  const st=$('#stack'),top=st.querySelector('.card.p0');
+  const st=$('#stack'),top=st.querySelector('.card.p0:not([data-out])');
   if(busy||!top)return;
   if(kind==='flip'){top.classList.toggle('flip');return}
-  const id=top.dataset.id,m=IDX[id];busy=true;
-  if(kind==='skip')S.skipped[id]=1;else if(kind==='watch')S.watch[id]=Date.now();else S.seen[id]=Date.now();
+  const id=top.dataset.id,m=get(id);busy=true;
+  if(kind==='skip')S.skipped[id]=1;else{keep(id);if(kind==='watch')S.watch[id]=Date.now();else S.seen[id]=Date.now()}
   last={id,kind};save();Q.shift();
   const tx=kind==='skip'?-1:kind==='watch'?1:0;
-  top.classList.remove('drag','deal');top.classList.add('out-'+kind);
+  top.dataset.out='1';top.classList.remove('drag','deal');top.classList.add('out-'+kind);
   top.style.transform=kind==='seen'?'translateY(-135%) rotate(5deg)':`translateX(${tx*150}%) rotate(${tx*24}deg)`;
   top.style.opacity='0';
-  $$('.card',st).forEach(c=>{if(c===top)return;c.classList.remove('deal');if(c.classList.contains('p1'))c.classList.replace('p1','p0');else if(c.classList.contains('p2'))c.classList.replace('p2','p1')});
-  if(Q[2]){const el=cardEl(IDX[Q[2]]);el.classList.add('p2','deal');st.prepend(el);Live.scan(el)}
+  $$('.card:not([data-out])',st).forEach(c=>{c.classList.remove('deal');if(c.classList.contains('p1'))c.classList.replace('p1','p0');else if(c.classList.contains('p2'))c.classList.replace('p2','p1')});
+  fillStack();
   setTimeout(()=>{top.remove();busy=false;deckMeta()},reduce.matches?0:340);
-  deckMeta();
+  if(feedSt&&Q.length<8&&!feeding){const gen=deckGen;feed(gen).then(()=>{if(gen===deckGen)fillStack()}).catch(()=>{})}
   if(kind==='watch'){
     badge(true);runBulbs();
     const r=(origin||$('.act.save i')).getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);
@@ -933,12 +1312,12 @@ function undo(){
   if(!last||busy)return;
   const{id,kind}=last;
   if(kind==='skip')delete S.skipped[id];else if(kind==='watch')delete S.watch[id];else{delete S.seen[id];delete S.ratings[id]}
-  last=null;save();Q.unshift(id);renderStack(true);badge();
+  last=null;if(get(id))Q.unshift(id);save();renderStack(true);badge();
 }
 /* drag to swipe, tap to flip */
 let drag=null;const stackEl=$('#stack');
 stackEl.addEventListener('pointerdown',e=>{
-  const c=e.target.closest('.card.p0');if(!c||busy||e.button)return;
+  const c=e.target.closest('.card.p0:not([data-out])');if(!c||busy||e.button)return;
   drag={c,x:e.clientX,y:e.clientY,dx:0,dy:0,moved:false,pid:e.pointerId};
   try{c.setPointerCapture(e.pointerId)}catch(_){}
 });
@@ -962,7 +1341,7 @@ function endDrag(e){
 }
 stackEl.addEventListener('pointerup',endDrag);stackEl.addEventListener('pointercancel',endDrag);
 document.addEventListener('keydown',e=>{
-  if(cur!=='deck'||$('#sheet').open||!$('#onboard').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(cur!=='deck'||$('#sheet').open||!$('#onboard').hidden||!$('#gate').hidden||e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.target.closest('input,select,textarea,summary'))return;
   if(e.key==='ArrowLeft'){e.preventDefault();act('skip')}
   else if(e.key==='ArrowRight'){e.preventDefault();act('watch')}
@@ -972,54 +1351,148 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- library ---------- */
 const SORTS={
-  imdb:(a,b)=>(b.r||0)-(a.r||0)||a.t.localeCompare(b.t),
-  mine:(a,b)=>(S.ratings[b.id]||0)-(S.ratings[a.id]||0)||(b.r||0)-(a.r||0),
+  imdb:(a,b)=>((sc(b)||{}).v||0)-((sc(a)||{}).v||0)||a.t.localeCompare(b.t),
+  mine:(a,b)=>(S.ratings[b.id]||0)-(S.ratings[a.id]||0)||((sc(b)||{}).v||0)-((sc(a)||{}).v||0),
   new:(a,b)=>b.y-a.y||a.t.localeCompare(b.t),
   old:(a,b)=>a.y-b.y||a.t.localeCompare(b.t),
   az:(a,b)=>a.t.localeCompare(b.t)
 };
-function mini(m){
+const SORT_LOCAL={imdb:'IMDb Rating',mine:'My Rating',new:'Newest First',old:'Oldest First',az:'Title A–Z'};
+const SORT_LIVE={pop:'Most Popular',rated:'Highest Rated',new:'Newest First'};
+const libSrc=()=>S.libSrc==='top'||S.libSrc==='base'?S.libSrc:(Live.on&&S.libSrc!=='base'?'live':'base');
+function mini(m,n){
   const my=S.ratings[m.id];
-  return`<button type="button" class="mini${isSeen(m.id)?' seen':''}" data-open="${m.id}" aria-label="${esc(m.t)}, ${m.y}, ${kindName(m)}${m.r?', IMDb '+nf1.format(m.r):''}${my?', your rating '+my:''}${S.watch[m.id]?', on your Watchlist':''}">${art(m)}${S.watch[m.id]?`<span class="flag">${ic('bookmark','fill')}</span>`:''}<span class="mini-t">${esc(m.t)}</span><span class="mini-m"><span>${m.r?'IMDb&nbsp;'+nf1.format(m.r):'No IMDb Score'}</span>${my?`<span class="mine">You&nbsp;${my}</span>`:isSeen(m.id)?'<span>Seen</span>':''}</span></button>`;
+  return`<button type="button" class="mini${isSeen(m.id)?' seen':''}" data-open="${esc(m.id)}" aria-label="${esc(m.t)}, ${yr(m)}, ${kindName(m)}${my?', your rating '+my:''}${S.watch[m.id]?', on your Watchlist':''}">${art(m)}${n?`<span class="rankno">${n}</span>`:''}${S.watch[m.id]?`<span class="flag">${ic('bookmark','fill')}</span>`:''}<span class="mini-t">${esc(m.t)}</span><span class="mini-m">${scEl(m,'mini')}${my?`<span class="mine">You&nbsp;${my}</span>`:isSeen(m.id)?'<span>Seen</span>':''}</span></button>`;
 }
+const skel=n=>Array.from({length:n},()=>'<span class="mini sk" aria-hidden="true"><span class="art" style="aspect-ratio:2/3;border-radius:12px"></span></span>').join('');
+function genreOrder(){return Object.keys(G).sort((a,b)=>(S.likes[b]||0)-(S.likes[a]||0)||G[a].localeCompare(G[b]))}
+function shelfHead(g,n){const p=S.likes[g]||0;return`<div class="shelf-h"><h3>${G[g]}</h3>${n?`<span class="n">${nf0.format(n)}</span>`:''}${p>0?'<span class="mark">Love It</span>':p<0?'<span class="mark">Not for Me</span>':''}</div>`}
+function libControls(){
+  const src=libSrc(),s=$('#lib-src');
+  s.innerHTML=(Live.on?'<option value="live">Everything (Live)</option>':'')+'<option value="top">IMDb Top 250</option><option value="base">Built-In Picks</option>';s.value=src;
+  const opts=src==='live'?SORT_LIVE:SORT_LOCAL,cur=src==='live'?S.libSortLive:S.libSort,so=$('#lib-sort');
+  so.innerHTML=Object.keys(opts).map(k=>`<option value="${k}">${opts[k]}</option>`).join('');so.value=opts[cur]?cur:Object.keys(opts)[0];
+  $('#lib-group').value=S.libGroup;
+  $('#q').placeholder=src==='live'?'Search every film and series…':'Search titles, e.g. Arrival…';
+}
+let libGen=0,shelfIO=null;
 function renderLibrary(){
-  const out=$('#lib-out'),q=$('#q').value.trim().toLowerCase(),keep={};
-  $$('.rail',out).forEach(r=>keep[r.dataset.g]=r.scrollLeft);
-  $('#lib-sort').value=S.libSort;$('#lib-group').value=S.libGroup;
-  let list=titles().filter(m=>(S.kind==='all'||m.k===S.kind)&&(!q||m.t.toLowerCase().includes(q)));
+  libControls();libGen++;
+  if(shelfIO){shelfIO.disconnect();shelfIO=null}
+  const q=$('#q').value.trim();
+  if(libSrc()==='live')return renderLibLive(q);
+  const out=$('#lib-out'),keepPos={},ql=q.toLowerCase(),top=libSrc()==='top';
+  $$('.rail',out).forEach(r=>keepPos[r.dataset.g]=r.scrollLeft);
+  let list=(top?BASE.filter(m=>m.top):titles()).filter(m=>(S.kind==='all'||m.k===S.kind)&&(!ql||m.t.toLowerCase().includes(ql)));
   list.sort(SORTS[S.libSort]||SORTS.imdb);
   $('#lib-count').textContent=`${nf0.format(list.length)} ${list.length===1?'title':'titles'}`;
-  if(!list.length){out.innerHTML=`<div class="empty"><b>Nothing Matches</b><p>${q?`No title contains “${esc(q)}”. Check the spelling, or add it yourself.`:'No titles of this type yet.'}</p><a class="btn" href="#you">Add a Title</a></div>`;return}
-  if(q||S.libGroup==='all'){out.innerHTML=`<div class="grid">${list.map(mini).join('')}</div>`}
+  if(!list.length){out.innerHTML=`<div class="empty"><b>Nothing Matches</b><p>${q?`No title here contains “${esc(q)}”.${Live.on?' Switch the collection to Everything to search all of TMDB.':' Check the spelling, or add it by hand under You.'}`:top?'The Top 250 is films only. Switch the filter back to All or Films.':'No titles of this type yet.'}</p></div>`;return}
+  const ranked=top&&S.libSort==='imdb'&&!q;
+  if(q||S.libGroup==='all'){out.innerHTML=`<div class="grid">${list.map((m,i)=>mini(m,ranked?i+1:0)).join('')}</div>`}
   else{
-    const order=Object.keys(G).sort((a,b)=>(S.likes[b]||0)-(S.likes[a]||0)||G[a].localeCompare(G[b]));
     let html='',cut=false;
-    for(const g of order){
+    for(const g of genreOrder()){
       const items=list.filter(m=>m.g.includes(g));if(!items.length)continue;
       const p=S.likes[g]||0;
       if(p<0&&!cut){cut=true;html+='<p class="divider">Genres You Keep Away</p>'}
-      html+=`<section class="shelf ${p<0?'nope':''}" aria-label="${G[g]}"><div class="shelf-h"><h3>${G[g]}</h3><span class="n">${nf0.format(items.length)}</span>${p>0?'<span class="mark">Love It</span>':p<0?'<span class="mark">Not for Me</span>':''}</div><div class="rail" data-g="${g}">${items.map(mini).join('')}</div></section>`;
+      html+=`<section class="shelf ${p<0?'nope':''}" aria-label="${G[g]}">${shelfHead(g,items.length)}<div class="rail" data-g="${g}">${items.map(m=>mini(m)).join('')}</div></section>`;
     }
     out.innerHTML=html;
-    $$('.rail',out).forEach(r=>{if(keep[r.dataset.g])r.scrollLeft=keep[r.dataset.g]});
+    $$('.rail',out).forEach(r=>{if(keepPos[r.dataset.g])r.scrollLeft=keepPos[r.dataset.g]});
   }
+  if(top)out.insertAdjacentHTML('beforeend','<p class="note">This list is a mid-2022 snapshot of the IMDb Top 250, ordered here by IMDb score.</p>');
   Live.scan(out);
 }
-let qT;$('#q').addEventListener('input',()=>{clearTimeout(qT);qT=setTimeout(renderLibrary,120)});
-$('#lib-sort').onchange=e=>{S.libSort=e.target.value;save();renderLibrary()};
+/* live library: everything on TMDB */
+function discParams(k,sort){
+  const today=new Date().toISOString().slice(0,10),p={language:'en-US',include_adult:'false'};
+  if(sort==='rated'){p.sort_by='vote_average.desc';p['vote_count.gte']=k==='s'?400:1500}
+  else if(sort==='new'){p.sort_by=k==='s'?'first_air_date.desc':'primary_release_date.desc';p['vote_count.gte']=k==='s'?60:150;p[k==='s'?'first_air_date.lte':'primary_release_date.lte']=today}
+  else{p.sort_by='popularity.desc';p['vote_count.gte']=k==='s'?80:200}
+  return p;
+}
+async function liveList(spec,page){
+  const kinds=S.kind==='all'?['m','s']:[S.kind];let more=false;
+  const lists=await Promise.all(kinds.map(async k=>{
+    const tk=k==='s'?'tv':'movie';let path,params={language:'en-US',page};
+    if(spec.type==='trend')path='trending/'+tk+'/week';
+    else if(spec.type==='search'){path='search/'+tk;params.query=spec.q;params.include_adult='false'}
+    else{path='discover/'+tk;Object.assign(params,discParams(k,S.libSortLive));if(spec.g){if(!GID[k][spec.g])return[];params.with_genres=GID[k][spec.g]}}
+    const j=await Live.json(path,params);
+    if((j.page||page)<Math.min(j.total_pages||1,500))more=true;
+    return(j.results||[]).map(r=>liveItem(r,k)).filter(Boolean);
+  }));
+  const out=[],seen=new Set(),n=Math.max(0,...lists.map(l=>l.length));
+  for(let i=0;i<n;i++)for(const l of lists){const m=l[i];if(m&&!seen.has(m.id)){seen.add(m.id);out.push(m)}}
+  return{items:out,more};
+}
+const specOf=el=>({type:el.dataset.t,g:el.dataset.g||'',q:el.dataset.q||''});
+async function loadInto(box){
+  if(box.dataset.busy||box.dataset.done)return;
+  const gen=libGen,page=(+box.dataset.page||0)+1,rail=box.classList.contains('rail');
+  box.dataset.busy='1';
+  $$('.mini.more,.mini.sk',box).forEach(e=>e.remove());const mr=box.nextElementSibling;if(!rail&&mr&&mr.classList.contains('more-row'))mr.innerHTML='';
+  box.insertAdjacentHTML('beforeend',skel(rail?4:8));
+  let res=null,err=false;
+  try{res=await liveList(specOf(box),page)}catch(e){err=true}
+  if(gen!==libGen||!box.isConnected)return;
+  delete box.dataset.busy;$$('.mini.sk',box).forEach(e=>e.remove());
+  if(err){
+    const msg='<p class="note">This didn’t load. Check your connection, then try again.</p>';
+    if(rail)box.insertAdjacentHTML('beforeend',`<button type="button" class="mini more" data-more>Try Again</button>`);
+    else if(mr)mr.innerHTML=`<div>${msg}<div class="btn-row" style="margin-top:8px"><button type="button" class="btn" data-more-grid>Try Again</button></div></div>`;
+    return;
+  }
+  box.dataset.page=page;
+  const have=new Set($$('.mini[data-open]',box).map(e=>e.dataset.open)),fresh=res.items.filter(m=>!have.has(m.id));
+  box.insertAdjacentHTML('beforeend',fresh.map(m=>mini(m)).join(''));
+  if(!res.more)box.dataset.done='1';
+  if(rail){
+    if(res.more)box.insertAdjacentHTML('beforeend','<button type="button" class="mini more" data-more>More</button>');
+    const sec=box.closest('.shelf');if(sec&&!$$('.mini[data-open]',box).length)sec.hidden=true;
+  }else if(mr){
+    mr.innerHTML=res.more?'<button type="button" class="btn" data-more-grid>Show More</button>':'';
+    if(!$$('.mini[data-open]',box).length)box.innerHTML=`<div class="empty" style="grid-column:1/-1"><b>Nothing Matches</b><p>${box.dataset.q?`TMDB has no title matching “${esc(box.dataset.q)}”. Check the spelling.`:'Nothing to show for this filter.'}</p></div>`;
+  }
+  Live.scan(box);
+}
+function renderLibLive(q){
+  const out=$('#lib-out');$('#lib-count').textContent='Live from TMDB';
+  if(q||S.libGroup==='all'){
+    out.innerHTML=`<div class="grid" data-t="${q?'search':'disc'}" data-q="${esc(q)}"></div><div class="more-row"></div>`;
+    loadInto(out.firstElementChild);return;
+  }
+  let html=`<section class="shelf" aria-label="Trending This Week"><div class="shelf-h"><h3>Trending This Week</h3></div><div class="rail" data-t="trend"></div></section>`,cut=false;
+  const kinds=S.kind==='all'?['m','s']:[S.kind];
+  for(const g of genreOrder()){
+    if(!kinds.some(k=>GID[k][g]))continue;
+    const p=S.likes[g]||0;
+    if(p<0&&!cut){cut=true;html+='<p class="divider">Genres You Keep Away</p>'}
+    html+=`<section class="shelf ${p<0?'nope':''}" aria-label="${G[g]}">${shelfHead(g)}<div class="rail" data-t="disc" data-g="${g}">${skel(4)}</div></section>`;
+  }
+  out.innerHTML=html;
+  const rails=$$('.rail',out);
+  if('IntersectionObserver'in window){
+    shelfIO=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){shelfIO.unobserve(e.target);loadInto(e.target)}},{rootMargin:'300px'});
+    rails.forEach(r=>shelfIO.observe(r));
+  }else rails.slice(0,4).forEach(loadInto);
+}
+let qT;$('#q').addEventListener('input',()=>{clearTimeout(qT);qT=setTimeout(renderLibrary,libSrc()==='live'?380:120)});
+$('#lib-sort').onchange=e=>{if(libSrc()==='live')S.libSortLive=e.target.value;else S.libSort=e.target.value;save();renderLibrary()};
 $('#lib-group').onchange=e=>{S.libGroup=e.target.value;save();renderLibrary()};
+$('#lib-src').onchange=e=>{S.libSrc=e.target.value;save();$('#q').value='';renderLibrary()};
 
 /* ---------- watchlist ---------- */
 function row(m,right,extra=''){
-  return`<li class="row" data-id="${m.id}"><button type="button" class="row-main" data-open="${m.id}">${art(m)}<span class="row-txt"><span class="row-t">${esc(m.t)}</span><span class="meta">${m.y} · ${kindName(m)} · ${gl(m)}</span></span></button>${right}${extra}</li>`;
+  return`<li class="row" data-id="${esc(m.id)}"><button type="button" class="row-main" data-open="${esc(m.id)}">${art(m)}<span class="row-txt"><span class="row-t">${esc(m.t)}</span><span class="meta">${yr(m)} · ${kindName(m)} · ${gl(m)}</span></span></button>${right}${extra}</li>`;
 }
 function renderWatchlist(){
   const out=$('#wl-out');$('#wl-sort').value=S.wlSort;
-  const list=Object.keys(S.watch).map(id=>IDX[id]).filter(Boolean);
+  const list=Object.keys(S.watch).map(get).filter(Boolean);
   list.sort(S.wlSort==='imdb'?SORTS.imdb:S.wlSort==='az'?SORTS.az:(a,b)=>S.watch[b.id]-S.watch[a.id]);
   $('#pick').disabled=!list.length;$('#wl-sort').disabled=!list.length;
   if(!list.length){out.innerHTML=`<div class="empty"><b>Nothing Saved Yet</b><p>Swipe a card to the right, or open any poster and save it. It lands here.</p><a class="btn primary" href="#deck">Open the Deck</a></div>`;return}
-  out.innerHTML=`<ul class="list">${list.map(m=>row(m,`<span class="row-score">${m.r?nf1.format(m.r):'–'}<small>IMDb</small></span>`,`<button type="button" class="icon-btn ok" data-wl-seen="${m.id}" aria-label="Mark ${esc(m.t)} as Seen">${ic('check')}</button><button type="button" class="icon-btn rm" data-wl-rm="${m.id}" aria-label="Remove ${esc(m.t)} From Watchlist">${ic('x')}</button>`)).join('')}</ul>`;
+  out.innerHTML=`<ul class="list">${list.map(m=>row(m,scEl(m,'row','span','row-score'),`<button type="button" class="icon-btn ok" data-wl-seen="${esc(m.id)}" aria-label="Mark ${esc(m.t)} as Seen">${ic('check')}</button><button type="button" class="icon-btn rm" data-wl-rm="${esc(m.id)}" aria-label="Remove ${esc(m.t)} From Watchlist">${ic('x')}</button>`)).join('')}</ul>`;
   Live.scan(out);
 }
 $('#wl-sort').onchange=e=>{S.wlSort=e.target.value;save();renderWatchlist()};
@@ -1040,24 +1513,27 @@ $('#pick').onclick=()=>{
 
 /* ---------- you ---------- */
 function renderYou(){
-  const rated=Object.keys(S.ratings).filter(id=>IDX[id]);
-  const seenN=new Set(Object.keys(S.seen).concat(rated).filter(id=>IDX[id])).size;
-  const wlN=Object.keys(S.watch).filter(id=>IDX[id]).length;
+  const me=P.find(p=>p.id===pid);
+  $('#who').innerHTML=me?`<span class="av" style="background:${AVC[me.c%AVC.length]}">${esc(me.name.slice(0,1))}</span><span>Signed in as<br><b></b></span>`:'';
+  if(me)$('#who b').textContent=me.name;
+  const rated=Object.keys(S.ratings).filter(get);
+  const seenN=new Set(Object.keys(S.seen).concat(rated).filter(get)).size;
+  const wlN=Object.keys(S.watch).filter(get).length;
   const avg=rated.length?rated.reduce((a,id)=>a+S.ratings[id],0)/rated.length:null;
-  const cmp=rated.filter(id=>IDX[id].r),diff=cmp.length?cmp.reduce((a,id)=>a+S.ratings[id]-IDX[id].r,0)/cmp.length:null;
-  const byG={};rated.forEach(id=>IDX[id].g.forEach(g=>(byG[g]=byG[g]||[]).push(S.ratings[id])));
+  const cmp=rated.filter(id=>sc(get(id))),diff=cmp.length?cmp.reduce((a,id)=>a+S.ratings[id]-sc(get(id)).v,0)/cmp.length:null;
+  const byG={};rated.forEach(id=>get(id).g.forEach(g=>(byG[g]=byG[g]||[]).push(S.ratings[id])));
   const best=Object.keys(byG).filter(g=>byG[g].length>1).map(g=>[byG[g].reduce((a,b)=>a+b,0)/byG[g].length,g]).sort((a,b)=>b[0]-a[0])[0];
   $('#you-stats').innerHTML=`<div class="stats">
     <div class="stat"><b>${nf0.format(seenN)}</b><span>Seen</span></div>
     <div class="stat"><b>${nf0.format(wlN)}</b><span>On Watchlist</span></div>
     <div class="stat"><b>${avg===null?'–':nf1.format(avg)}</b><span>Your Average</span></div>
-    <div class="stat"><b>${diff===null?'–':(diff>0?'+':diff<0?'−':'')+nf1.format(Math.abs(diff))}</b><span>${diff===null?'vs IMDb':diff>0.05?'Kinder Than IMDb':diff<-0.05?'Tougher Than IMDb':'In Step With IMDb'}</span></div>
+    <div class="stat"><b>${diff===null?'–':(diff>0?'+':diff<0?'−':'')+nf1.format(Math.abs(diff))}</b><span>${diff===null?'vs Public Scores':diff>0.05?'Kinder Than the Crowd':diff<-0.05?'Tougher Than the Crowd':'In Step With the Crowd'}</span></div>
   </div>${best?`<p class="meta">Your highest-rated genre so far is ${G[best[1]]}, at ${nf1.format(best[0])} across ${byG[best[1]].length} titles.</p>`:''}`;
-  const list=rated.map(id=>IDX[id]).sort(SORTS.mine);
-  $('#you-rated').innerHTML=list.length?`<ul class="list">${list.map(m=>row(m,`<span class="row-score" style="color:var(--accent-text)">${S.ratings[m.id]}<small>You</small></span><span class="row-score">${m.r?nf1.format(m.r):'–'}<small>IMDb</small></span>`)).join('')}</ul>`
+  const list=rated.map(get).sort(SORTS.mine);
+  $('#you-rated').innerHTML=list.length?`<ul class="list">${list.map(m=>row(m,`<span class="row-score" style="color:var(--accent-text)">${S.ratings[m.id]}<small>You</small></span>${scEl(m,'row','span','row-score')}`)).join('')}</ul>`
     :`<div class="empty"><p>No ratings yet. Mark something as seen and give it a score out of 10.</p><a class="btn" href="#library">Browse the Library</a></div>`;
   $('#taste').innerHTML=chipsHTML();
-  $('#tm-k').value=Live.key;
+  $('#tm-k').value=Live.key;$('#om-k').value=Imdb.key;
   Live.scan($('#you-rated'));
 }
 $('#a-g').innerHTML=Object.keys(G).map(g=>`<label class="ck"><input type="checkbox" name="g" value="${g}"><span>${G[g]}</span></label>`).join('');
@@ -1078,34 +1554,54 @@ $('#add').addEventListener('submit',e=>{
   toast(`${t} is in your library`);renderYou();
 });
 $('#tm').addEventListener('submit',async e=>{
-  e.preventDefault();const k=$('#tm-k').value.trim(),st=$('#tm-s');
+  e.preventDefault();const k=$('#tm-k').value.trim(),st=$('#tm-s'),old=Live.key;
   if(!k){st.textContent='Paste a key first, then save.';$('#tm-k').focus();return}
   Live.key=k;Live.dead=false;st.textContent='Checking…';
   try{
     const r=await Live.req('configuration',{});
-    if(r.ok){LS.set('fd.tmdb',k);st.textContent='Connected. Posters appear as you browse.';Live.scan()}
-    else{Live.key=LS.get('fd.tmdb')||'';st.textContent=r.status===401?'TMDB rejected this key. Copy it again from your TMDB account settings.':'TMDB answered with an error. Try again in a minute.'}
-  }catch(err){Live.key=LS.get('fd.tmdb')||'';Live.dead=true;st.textContent='TMDB can’t be reached from here. Posters work once the app runs on its own web address.'}
+    if(r.ok){LS.set('fd.tmdb',k);Live.jobs={};st.textContent='Connected. The Library and Deck are now live.';S.libSrc='live';deckDirty=true;save();Live.scan()}
+    else{Live.key=old;st.textContent=r.status===401?'TMDB rejected this key. Copy it again from your TMDB account settings.':'TMDB answered with an error. Try again in a minute.'}
+  }catch(err){Live.key=old;st.textContent='TMDB can’t be reached from here. The live catalogue works once the app runs on its own web address.'}
 });
-$('#tm-x').onclick=()=>{Live.key='';Live.cache={};LS.del('fd.tmdb');LS.del('fd.posters');$('#tm-k').value='';$$('.art.has-img').forEach(a=>{a.classList.remove('has-img');const i=a.querySelector('img');if(i)i.remove()});$('#tm-s').textContent='Key removed. Back to drawn posters.'};
-let resetT;
-$('#reset').onclick=e=>{
-  const b=e.currentTarget;
-  if(!b.dataset.arm){b.dataset.arm=1;b.textContent='Tap Again to Erase Everything';resetT=setTimeout(()=>{delete b.dataset.arm;b.textContent='Reset Everything'},4000);return}
-  clearTimeout(resetT);delete b.dataset.arm;b.textContent='Reset Everything';
+$('#tm-x').onclick=()=>{Live.key='';Live.cache={};Live.jobs={};LS.del('fd.tmdb');LS.del('fd.posters');$('#tm-k').value='';$$('.art.has-img').forEach(a=>{a.classList.remove('has-img');const i=a.querySelector('img');if(i)i.remove()});deckDirty=true;$('#tm-s').textContent='Key removed. Back to the built-in titles and drawn posters.'};
+$('#om').addEventListener('submit',async e=>{
+  e.preventDefault();const k=$('#om-k').value.trim(),st=$('#om-s');
+  if(!k){st.textContent='Paste a key first, then save.';$('#om-k').focus();return}
+  st.textContent='Checking…';
+  try{
+    const u=new URL('https://www.omdbapi.com/');u.searchParams.set('apikey',k);u.searchParams.set('i','tt0111161');
+    const r=await fetch(u),j=await r.json();
+    if(r.ok&&j.Response==='True'){Imdb.key=k;Imdb.dead=false;LS.set('fd.omdb',k);st.textContent='Connected. IMDb scores load on the top Deck card and on titles you open.';topUp()}
+    else st.textContent='OMDb rejected this key. Check the activation email, then paste it again.';
+  }catch(err){st.textContent='OMDb can’t be reached from here. Live scores work once the app runs on its own web address.'}
+});
+$('#om-x').onclick=()=>{Imdb.key='';Imdb.cache={};LS.del('fd.omdb');LS.del('fd.imdb');$('#om-k').value='';$('#om-s').textContent='Key removed.'};
+function twoStep(btn,label,armed,fn){
+  let t;btn.onclick=()=>{
+    if(!btn.dataset.arm){btn.dataset.arm=1;btn.textContent=armed;t=setTimeout(()=>{delete btn.dataset.arm;btn.textContent=label},4000);return}
+    clearTimeout(t);delete btn.dataset.arm;btn.textContent=label;fn();
+  };
+}
+twoStep($('#reset'),'Reset This Profile','Tap Again to Erase Everything',()=>{
   const snap=JSON.stringify(S),theme=S.theme;
-  S=hydrate({theme});save();boot(true);
-  toast('Everything was reset',()=>{S=hydrate(JSON.parse(snap));save();boot(true)});
-};
+  S=hydrate({theme});save();boot();
+  toast('This profile was reset',()=>{S=hydrate(JSON.parse(snap));save();boot()});
+});
+twoStep($('#delprofile'),'Delete This Profile','Tap Again to Delete for Good',()=>{
+  const id=pid,name=(P.find(p=>p.id===id)||{}).name||'Profile';
+  P=P.filter(p=>p.id!==id);LS.del(sKey(id));saveProfiles();signOut();toast(`${name} was deleted`);
+});
+$('#signout').onclick=()=>signOut();
 
 /* ---------- detail sheet ---------- */
 const sheet=$('#sheet');let sheetId=null,sheetDirty=false;
 function renderSheet(ask){
-  const m=IDX[sheetId],my=S.ratings[m.id]||0,onW=!!S.watch[m.id],seen=isSeen(m.id);
+  const m=get(sheetId);if(!m)return;
+  const my=S.ratings[m.id]||0,onW=!!S.watch[m.id],seen=isSeen(m.id),hk=hookText(m);
   sheet.innerHTML=`<div class="sheet-body">
     <button type="button" class="icon-btn sheet-x" data-close aria-label="Close">${ic('x')}</button>
-    <div class="sheet-top">${art(m)}<div class="sheet-info"><h2 id="sheet-t">${esc(m.t)}</h2><p class="meta">${m.y} · ${kindName(m)}${m.f?' · Family-Friendly':''}</p>${m.h?`<p class="hook">${esc(m.h)}</p>`:''}<div class="tags">${m.g.map(g=>`<span class="tag ${likeCls(g)}">${G[g]}</span>`).join('')}</div></div></div>
-    <div class="scores"><div class="sbox"><span class="lbl">IMDb</span><b>${m.r?nf1.format(m.r):'–'}</b></div><div class="sbox mine"><span class="lbl">Your Rating</span><b>${my||'–'}</b></div></div>
+    <div class="sheet-top">${art(m)}<div class="sheet-info"><h2 id="sheet-t">${esc(m.t)}</h2><p class="meta">${yr(m)} · ${kindName(m)}${m.f?' · Family-Friendly':''}</p><p class="hook" data-hook="${esc(m.id)}"${hk?'':' hidden'}>${esc(hk)}</p><div class="tags">${m.top?'<span class="tag top">IMDb Top 250</span>':''}${m.g.map(g=>`<span class="tag ${likeCls(g)}">${G[g]}</span>`).join('')}</div></div></div>
+    <div class="scores">${scEl(m,'box','div','sbox')}<div class="sbox mine"><span class="lbl">Your Rating</span><b>${my||'–'}</b></div></div>
     <p class="ask" id="ask">${ask?'How Was It? Give It a Score.':my?'Tap Your Score Again to Clear It':'Seen It? Give It a Score.'}</p>
     <div class="pips" role="group" aria-labelledby="ask">${Array.from({length:10},(_,i)=>i+1).map(n=>`<button type="button" class="pip${n<=my?' on':''}" data-rate="${n}" aria-pressed="${n===my}" aria-label="${n} out of 10">${n}</button>`).join('')}</div>
     <div class="btn-row">
@@ -1114,31 +1610,32 @@ function renderSheet(ask){
     </div>
     ${m.c?`<button type="button" class="btn danger" data-delcustom>${ic('trash')}Remove This Title</button>`:''}
   </div>`;
-  Live.scan(sheet);
+  Live.scan(sheet);liveScore(m.id);fillHook(m.id);
 }
-function openSheet(id,ask){if(!IDX[id])return;sheetId=id;renderSheet(ask);if(!sheet.open)sheet.showModal()}
+function openSheet(id,ask){if(!get(id))return;sheetId=id;renderSheet(ask);if(!sheet.open)sheet.showModal()}
 sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.close()});
-sheet.addEventListener('close',()=>{if(sheetDirty){sheetDirty=false;if(cur!=='deck')render(cur)}});
+sheet.addEventListener('close',()=>{if(sheetDirty){sheetDirty=false;if(cur==='library'&&libSrc()==='live')patchMinis(sheetId);else if(cur!=='deck')render(cur)}});
+function patchMinis(id){const m=get(id);if(m)$$('#lib-out .mini[data-open]').forEach(el=>{if(el.dataset.open===id){const t=document.createElement('template');t.innerHTML=mini(m);el.replaceWith(t.content.firstChild)}});Live.scan($('#lib-out'))}
 function mark(){sheetDirty=true;deckDirty=true;save();badge()}
 
 /* ---------- clicks ---------- */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-open],[data-close],[data-rate],[data-wl],[data-seen],[data-delcustom],[data-genre],[data-mode],[data-kind],[data-act],[data-wl-seen],[data-wl-rm],[data-unskip]');
+  const t=e.target.closest('[data-open],[data-close],[data-rate],[data-wl],[data-seen],[data-delcustom],[data-genre],[data-who],[data-kind],[data-act],[data-wl-seen],[data-wl-rm],[data-unskip],[data-more],[data-more-grid]');
   if(!t)return;const d=t.dataset;
   if(d.open)openSheet(d.open);
   else if('close'in d)sheet.close();
   else if(d.rate){
     const n=+d.rate,id=sheetId;
     if(S.ratings[id]===n)delete S.ratings[id];
-    else{S.ratings[id]=n;S.seen[id]=S.seen[id]||Date.now();if(S.watch[id]){delete S.watch[id];toast(`Rated ${n}. Taken off your Watchlist.`)}}
+    else{keep(id);S.ratings[id]=n;S.seen[id]=S.seen[id]||Date.now();if(S.watch[id]){delete S.watch[id];toast(`Rated ${n}. Taken off your Watchlist.`)}}
     mark();renderSheet();const p=$(`[data-rate="${n}"]`,sheet);if(p)p.focus();
   }
   else if('wl'in d){
-    const id=sheetId;if(S.watch[id])delete S.watch[id];else{S.watch[id]=Date.now();const r=t.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);runBulbs()}
+    const id=sheetId;if(S.watch[id])delete S.watch[id];else{keep(id);S.watch[id]=Date.now();const r=t.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);runBulbs()}
     mark();badge(!!S.watch[id]);renderSheet();$('[data-wl]',sheet).focus();
   }
   else if('seen'in d){
-    const id=sheetId;if(isSeen(id)){delete S.seen[id];delete S.ratings[id]}else{S.seen[id]=Date.now();delete S.watch[id]}
+    const id=sheetId;if(isSeen(id)){delete S.seen[id];delete S.ratings[id]}else{keep(id);S.seen[id]=Date.now();delete S.watch[id]}
     mark();renderSheet();$('[data-seen]',sheet).focus();
   }
   else if('delcustom'in d){
@@ -1148,22 +1645,88 @@ document.addEventListener('click',e=>{
     toast(`${name} was removed`,()=>{S=hydrate(JSON.parse(snap));save();reindex();badge();deckDirty=true;render(cur)});
   }
   else if(d.genre)cycleGenre(t);
-  else if(d.mode){S.mode=d.mode;save();renderDeckControls();buildDeck();renderStack(true)}
-  else if(d.kind){S.kind=d.kind;save();renderDeckControls();deckDirty=true;if(cur==='deck'){buildDeck();renderStack(true)}else render(cur)}
+  else if(d.who){S.mode=d.who;save();renderDeckControls();buildDeck()}
+  else if(d.kind){S.kind=d.kind;save();renderDeckControls();deckDirty=true;if(cur==='deck')buildDeck();else render(cur)}
   else if(d.act)act(d.act);
   else if(d.wlSeen){const id=d.wlSeen;S.seen[id]=Date.now();delete S.watch[id];deckDirty=true;save();badge();renderWatchlist();openSheet(id,true)}
   else if(d.wlRm){
-    const id=d.wlRm,when=S.watch[id];delete S.watch[id];deckDirty=true;save();badge();renderWatchlist();
-    toast(`${IDX[id].t} was removed`,()=>{S.watch[id]=when;save();badge();if(cur==='watchlist')renderWatchlist()});
+    const id=d.wlRm,when=S.watch[id],m=get(id),meta=S.meta[id];delete S.watch[id];deckDirty=true;save();badge();renderWatchlist();
+    toast(`${m.t} was removed`,()=>{if(meta)S.meta[id]=meta;S.watch[id]=when;save();badge();if(cur==='watchlist')renderWatchlist()});
   }
-  else if('unskip'in d){S.skipped={};save();buildDeck();renderStack(true)}
+  else if('unskip'in d){S.skipped={};save();buildDeck()}
+  else if('more'in d)loadInto(t.closest('.rail'));
+  else if('moreGrid'in d){const g=$('#lib-out .grid');if(g)loadInto(g)}
 });
 
+/* ---------- sign-in ---------- */
+const gate=$('#gate'),gateIn=$('#gate-in');
+const brandHTML='<p class="wordmark" translate="no">Flick<span>deck</span></p>';
+function showGate(view,arg){
+  S=hydrate(null);gate.hidden=false;$('#onboard').hidden=true;$('#app').inert=true;if(sheet.open)sheet.close();applyTheme();
+  if(!view)view=P.length?'list':'new';
+  if(view==='list'){
+    gateIn.innerHTML=`${brandHTML}<p class="eyebrow">Sign In</p><h2 id="gate-h">Who's Watching?</h2>
+      <div class="people">${P.map((p,i)=>`<button type="button" class="person" data-p="${p.id}" style="--i:${i}"><span class="av" style="background:${AVC[p.c%AVC.length]}">${esc(p.name.slice(0,1))}</span><span>${esc(p.name)}</span>${p.pin?ic('lock'):''}</button>`).join('')}</div>
+      <div class="btn-row"><button type="button" class="btn" data-g="new">${ic('plus')}Add a Profile</button></div>`;
+  }else if(view==='new'){
+    gateIn.innerHTML=`${brandHTML}<p class="eyebrow">${P.length?'New Profile':'Welcome'}</p><h2 id="gate-h">${P.length?'Add a Profile':'Create Your Profile'}</h2>
+      <p>Each profile keeps its own taste, ratings and Watchlist on this device.</p>
+      <form id="g-new" novalidate>
+        <label for="g-name">Your Name</label>
+        <input id="g-name" name="nickname" type="text" autocomplete="nickname" maxlength="24" placeholder="Hutan…">
+        <p class="err" id="g-name-e" hidden></p>
+        <label for="g-pin">4-Digit PIN (Optional)</label>
+        <input id="g-pin" class="pin" name="pin" type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="1234…" data-1p-ignore data-lpignore="true">
+        <p class="err" id="g-pin-e" hidden></p>
+        <div class="btn-row"><button class="btn primary" type="submit">Create Profile</button>${P.length?'<button type="button" class="btn" data-g="list">Back</button>':''}</div>
+      </form>
+      <p class="fine">Kept on this device only. The PIN stops other people on this device opening your profile; it is not strong security.</p>`;
+  }else{
+    const p=P.find(x=>x.id===arg);
+    gateIn.innerHTML=`${brandHTML}<p class="eyebrow">Sign In</p><h2 id="gate-h"></h2>
+      <form id="g-pinf" novalidate data-p="${p.id}">
+        <label for="g-pin2">Your PIN</label>
+        <input id="g-pin2" class="pin" name="pin" type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="••••" data-1p-ignore data-lpignore="true">
+        <p class="err" id="g-pin2-e" hidden></p>
+        <div class="btn-row"><button class="btn primary" type="submit">Sign In</button><button type="button" class="btn" data-g="list">Back</button></div>
+      </form>`;
+    $('#gate-h').textContent='Hello, '+p.name;
+    $('#g-pin2').focus();
+  }
+}
+gate.addEventListener('click',e=>{
+  const b=e.target.closest('[data-g],[data-p]');if(!b||b.tagName==='FORM')return;
+  if(b.dataset.g)showGate(b.dataset.g);
+  else{const p=P.find(x=>x.id===b.dataset.p);if(p)p.pin?showGate('pin',p.id):signIn(p.id)}
+});
+gate.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(e.target.id==='g-new'){
+    const name=$('#g-name').value.trim(),pin=$('#g-pin').value.trim(),ne=$('#g-name-e'),pe=$('#g-pin-e');
+    const e1=!name?'Type a name for this profile.':P.some(p=>p.name.toLowerCase()===name.toLowerCase())?'That name is taken on this device. Pick another.':'';
+    const e2=pin&&!/^\d{4}$/.test(pin)?'Use exactly 4 digits, or leave the PIN blank.':'';
+    ne.hidden=!e1;ne.textContent=e1;pe.hidden=!e2;pe.textContent=e2;
+    if(e1){$('#g-name').focus();return}if(e2){$('#g-pin').focus();return}
+    const id='p'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36),p={id,name,c:P.length,pin:pin?await hashPin(id,pin):''};
+    P.push(p);saveProfiles();
+    const legacy=!LS.get(sKey(id))&&P.length===1?jget('fd.state',null):null;
+    if(legacy){LS.set(sKey(id),JSON.stringify(hydrate(legacy)));LS.del('fd.state')}
+    signIn(id);if(legacy)toast('Your earlier ratings and Watchlist came along');
+  }else if(e.target.id==='g-pinf'){
+    const p=P.find(x=>x.id===e.target.dataset.p),inp=$('#g-pin2'),er=$('#g-pin2-e');
+    if(p&&await hashPin(p.id,inp.value.trim())===p.pin)signIn(p.id);
+    else{er.hidden=false;er.textContent='That PIN doesn’t match. Try again.';inp.value='';inp.focus()}
+  }
+});
+function signIn(id){pid=id;LS.set('fd.session',id);S=hydrate(jget(sKey(id),null));LS.set('fd.theme',S.theme);gate.hidden=true;boot();runBulbs()}
+function signOut(){pid=null;LS.del('fd.session');Q=[];deckGen++;location.hash='#deck';showGate()}
+
 /* ---------- onboarding and routing ---------- */
-$('#ob-go').onclick=()=>{S.onboarded=true;save();$('#onboard').hidden=true;$('#app').inert=false;buildDeck();renderStack(true);runBulbs();$('#main').focus({preventScroll:true})};
+$('#ob-go').onclick=()=>{S.onboarded=true;save();$('#onboard').hidden=true;$('#app').inert=false;buildDeck();runBulbs();$('#main').focus({preventScroll:true})};
 const VIEWS=['deck','library','watchlist','you'];
 function render(v){
-  if(v==='deck'){if(deckDirty){buildDeck();renderStack(true)}else deckMeta()}
+  if(!pid)return;
+  if(v==='deck'){if(!S.onboarded)return;if(deckDirty)buildDeck();else deckMeta()}
   else if(v==='library')renderLibrary();
   else if(v==='watchlist')renderWatchlist();
   else renderYou();
@@ -1176,13 +1739,14 @@ function route(){
 }
 addEventListener('hashchange',route);
 $('.skiplink').addEventListener('click',e=>{e.preventDefault();$('#main').focus()});
-function boot(again){
+function boot(){
   reindex();applyTheme();renderDeckControls();badge();obLabel();
   $('#ob-chips').innerHTML=chipsHTML();
   $('#onboard').hidden=S.onboarded;$('#app').inert=!S.onboarded;
+  if(sheet.open)sheet.close();
   deckDirty=true;route();
-  if(again&&sheet.open)sheet.close();
 }
+function start(){loadProfiles();if(pid){S=hydrate(jget(sKey(pid),null));gate.hidden=true;boot()}else{reindex();showGate()}}
 /* home-screen icon, drawn at runtime */
 try{
   const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d');
@@ -1192,7 +1756,7 @@ try{
   const u=c.toDataURL('image/png');
   for(const rel of['apple-touch-icon','icon']){const l=document.createElement('link');l.rel=rel;l.href=u;document.head.appendChild(l)}
 }catch(e){}
-Live.init();boot();cloudInit();
+start();cloudInit();
 })();
 </script>
 </body>
