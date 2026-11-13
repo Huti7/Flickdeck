@@ -1,11 +1,12 @@
 // Flickdeck relay
 // 1. Passes the app's movie-database requests to TMDB and adds your secret token on the
 //    server, so the token never reaches the browser. Secret name: TMDB_TOKEN
-// 2. Runs "Together" rooms, where two people swipe the same cards and see their matches.
+// 2. Fetches IMDb scores and awards from OMDb with your secret key. Secret name: OMDB_KEY
+// 3. Runs "Together" rooms, where two people swipe the same cards and see their matches.
 //    Needs a Cloudflare D1 database bound to this worker with the variable name DB.
 
 const ALLOWED = ['https://huti7.github.io'];
-const PATHS = /^(configuration|find\/|search\/(movie|tv)|discover\/(movie|tv)|trending\/(movie|tv)\/|(movie|tv)\/\d+\/(external_ids|videos))/;
+const PATHS = /^(configuration|find\/|search\/(movie|tv)|discover\/(movie|tv)|trending\/(movie|tv)\/|(movie|tv)\/\d+\/(external_ids|videos)$|(movie|tv)\/\d+$)/;
 const GENRES = new Set(['Ac', 'Ad', 'An', 'Co', 'Cr', 'Do', 'Dr', 'Fa', 'Fn', 'Hi', 'Ho', 'Mu', 'My', 'Ro', 'Sf', 'Th', 'Wa', 'We']);
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 let ready = false;
@@ -26,6 +27,7 @@ export default {
     const url = new URL(req.url);
     const path = url.pathname.replace(/^\/+/, '');
     if (path.startsWith('together/')) return together(req, env, ctx, cors, path, url);
+    if (path === 'omdb') return omdb(req, env, cors, url);
 
     if (req.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: cors });
     if (!env.TMDB_TOKEN) return new Response('Relay has no TMDB_TOKEN secret', { status: 500, headers: cors });
@@ -44,6 +46,24 @@ export default {
     });
   }
 };
+
+/* ---------- IMDb scores and awards (OMDb) ---------- */
+async function omdb(req, env, cors, url) {
+  if (req.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: cors });
+  if (!env.OMDB_KEY) return new Response(JSON.stringify({ error: 'no-key' }), { status: 503, headers: { ...cors, 'Content-Type': 'application/json' } });
+  const q = new URLSearchParams();
+  for (const k of ['i', 't', 'y', 'type']) {
+    const v = url.searchParams.get(k);
+    if (v) q.set(k, v.slice(0, 120));
+  }
+  if (!q.has('i') && !q.has('t')) return new Response('Bad request', { status: 400, headers: cors });
+  q.set('apikey', env.OMDB_KEY);
+  const r = await fetch('https://www.omdbapi.com/?' + q, { cf: { cacheTtl: 86400, cacheEverything: true } });
+  return new Response(r.body, {
+    status: r.status,
+    headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=86400' }
+  });
+}
 
 /* ---------- Together rooms ---------- */
 const json = (o, status, cors) => new Response(JSON.stringify(o), {
