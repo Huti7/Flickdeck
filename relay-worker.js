@@ -3,7 +3,7 @@
 // Set the token in Cloudflare as a Secret named TMDB_TOKEN.
 
 const ALLOWED = ['https://huti7.github.io'];
-const PATHS = /^(configuration|find\/|search\/(movie|tv)|discover\/(movie|tv)|trending\/(movie|tv)\/|movie\/\d+\/external_ids|tv\/\d+\/external_ids)/;
+const PATHS = /^(configuration|find\/|search\/(movie|tv)|discover\/(movie|tv)|trending\/(movie|tv)\/|(movie|tv)\/\d+\/(external_ids|videos))/;
 
 export default {
   async fetch(req, env) {
