@@ -1,4 +1,4 @@
-# Flickdeck
+# Film Stack
 
 A movie and series picker: poster flashcards, genre taste, Watchlist and your own ratings.
 

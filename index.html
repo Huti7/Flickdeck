@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Flickdeck</title>
+<title>Film Stack</title>
 <meta name="theme-color" content="#100d1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Flickdeck">
+<meta name="apple-mobile-web-app-title" content="Film Stack">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,7 +56,7 @@ svg.ic.fill{fill:currentColor;stroke:none}
 header{grid-area:head;display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:calc(10px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 6px max(16px,env(safe-area-inset-left))}
 .brand h1,.wordmark{font:400 30px/1 var(--f-display);letter-spacing:.045em;text-transform:uppercase}
-.brand h1 span,.wordmark span{color:var(--accent-text)}
+.brand h1 span,.wordmark span{color:var(--accent-text);margin-left:.22em}
 .bulbs{display:flex;gap:5px;margin-top:5px}
 .bulbs i{width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.4}
 .bulbs.run i{animation:bulb .9s ease-in-out calc(var(--i)*70ms) 3}
@@ -624,7 +624,7 @@ dialog#sheet[open]{animation:sheet .4s cubic-bezier(.2,.9,.25,1)}
 <div class="app" id="app">
   <header>
     <div class="brand">
-      <h1 translate="no">Flick<span>deck</span></h1>
+      <h1 translate="no">Film<span>Stack</span></h1>
       <div class="bulbs run" id="bulbs" aria-hidden="true"></div>
     </div>
     <button id="theme" class="icon-btn" type="button" aria-label="Switch to Light Mode"></button>
@@ -2440,7 +2440,7 @@ async function joinRoom(code){
 function leaveRoom(){S.room=null;R=null;clearTimeout(pollT);save();deckDirty=true;renderDeckControls();if(cur==='together')renderTogether()}
 function inviteLink(){return location.origin+location.pathname+'#join-'+S.room.code}
 async function invite(){
-  const url=inviteLink(),text=`Swipe movies with me on Flickdeck. Room code: ${S.room.code}`;
+  const url=inviteLink(),text=`Swipe movies with me on Film Stack. Room code: ${S.room.code}`;
   try{if(navigator.share){await navigator.share({title:'Movie night?',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(url);toast('Invite link copied')}catch(e){const i=$('#tg-link');if(i){i.hidden=false;i.value=url;i.focus();i.select()}}
 }
@@ -2527,7 +2527,7 @@ function wrapData(ym){
 }
 function wrapSlides(d){
   const S2=[],sl=(i,html)=>S2.push(`<div class="wr-slide" style="--wbg:${WBG[i%WBG.length]}">${html}</div>`),D=k=>`style="--d:${k}"`;
-  sl(0,`<p class="wr-k" ${D(0)}>Flickdeck Wrapped</p><p class="wr-big" ${D(1)}>${d.short}</p><p class="wr-h" ${D(2)}>${esc(d.name)}’s ${d.mon} in Film</p><p class="wr-p" ${D(3)}>Tap through to see what you watched, loved and judged.</p>`);
+  sl(0,`<p class="wr-k" ${D(0)}>Film Stack Wrapped</p><p class="wr-big" ${D(1)}>${d.short}</p><p class="wr-h" ${D(2)}>${esc(d.name)}’s ${d.mon} in Film</p><p class="wr-p" ${D(3)}>Tap through to see what you watched, loved and judged.</p>`);
   sl(1,`<p class="wr-k" ${D(0)}>In ${d.mon} you watched</p><p class="wr-big" ${D(1)} data-count="${d.n}">0</p><p class="wr-h" ${D(2)}>${d.n===1?'Title':'Titles'}</p><p class="wr-p" ${D(3)}>${nf0.format(d.films)} ${d.films===1?'film':'films'} and ${nf0.format(d.series)} series. ${d.n>=20?'That is serious dedication.':d.n>=8?'A proper film fan.':'A great start.'}</p>`);
   if(d.topG.length)sl(2,`<p class="wr-k" ${D(0)}>Your genre was</p><p class="wr-h" ${D(1)}>${G[d.topG[0]]}</p><ul class="wr-list" ${D(2)}>${d.topG.map(g=>{const w=Math.round(d.gc[g]/d.n*100);return`<li><span class="row2"><span>${G[g]}</span><span>${w}%</span></span><span class="wr-bar"><i style="--w:${w}%"></i></span></li>`}).join('')}</ul><p class="wr-p" ${D(3)}>Share of the titles you watched.</p>`);
   if(d.rated.length){const t=d.rated[0];sl(3,`<p class="wr-k" ${D(0)}>Your top-rated</p><div class="wr-top" ${D(1)}>${art(t).replace('class="art','class="art wr-hero')}<div><p class="wr-big" style="font-size:clamp(70px,22vw,110px)">${S.ratings[t.id]}</p><p class="wr-p">out of 10</p></div></div><p class="wr-h" ${D(2)}></p>${d.rated.slice(1,3).map((m,i)=>`<div class="wr-mini" ${D(3+i)}>${art(m)}<span></span><span style="margin-left:auto">${S.ratings[m.id]}/10</span></div>`).join('')}`)}
@@ -2575,7 +2575,7 @@ async function wrapImage(d){
   const Rn=rng('wrap'+d.name+d.ym);for(let i=0;i<80;i++){x.globalAlpha=.2+Rn()*.5;x.fillStyle=['#ffb52e','#ffffff','#49d6a4','#5ed4f4'][i%4];x.beginPath();x.arc(Rn()*1080,Rn()*1920,3+Rn()*10,0,Math.PI*2);x.fill()}
   x.globalAlpha=1;
   const fit=(t,max,size,font)=>{let s=size;do{x.font=font.replace('#',s);s-=4}while(x.measureText(t).width>max&&s>40);return x.measureText(t).width>max?t.slice(0,Math.floor(t.length*max/x.measureText(t).width)-1)+'…':t};
-  x.fillStyle='#fff';x.font='400 72px Anton, Impact, sans-serif';x.fillText('FLICK',90,190);const fw=x.measureText('FLICK').width;x.fillStyle='#ffb52e';x.fillText('DECK',90+fw,190);
+  x.fillStyle='#fff';x.font='400 72px Anton, Impact, sans-serif';x.fillText('FILM',90,190);const fw=x.measureText('FILM ').width;x.fillStyle='#ffb52e';x.fillText('STACK',90+fw,190);
   x.fillStyle='#fff';const head=fit(`${d.name.toUpperCase()}’S ${d.label.toUpperCase()} WRAPPED`,900,44,'800 #px "Hanken Grotesk", sans-serif');x.fillText(head,90,270);
   const rows=[['FILM PERSONALITY',d.per[0]],['TITLES WATCHED',nf0.format(d.n)],['TOP GENRE',d.topG[0]?G[d.topG[0]]:'–'],['TOP-RATED',d.rated[0]?d.rated[0].t:'–'],['CRITIC STYLE',d.critic||'–'],['FAVOURITE DECADE',d.decade||'–']];
   let y=440;
@@ -2586,9 +2586,9 @@ async function wrapImage(d){
 async function wrapOut(share){
   if(!WRS)return;
   const b=WRS.blob||await wrapImage(WRS.d);if(!b){toast('The image couldn’t be made on this device');return}
-  WRS.blob=b;const file=new File([b],'flickdeck-wrapped.png',{type:'image/png'});
-  if(share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'My Flickdeck Wrapped'})}catch(e){}return}
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='flickdeck-wrapped.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  WRS.blob=b;const file=new File([b],'film-stack-wrapped.png',{type:'image/png'});
+  if(share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'My Film Stack Wrapped'})}catch(e){}return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='film-stack-wrapped.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
   if(share)toast('Sharing isn’t available here, so the image was saved instead');
 }
 $('#wrap').addEventListener('click',e=>{
@@ -2612,7 +2612,7 @@ $('#wr-cta').addEventListener('click',e=>{const b=e.target.closest('[data-wrappe
 
 /* ---------- sign-in ---------- */
 const gate=$('#gate'),gateIn=$('#gate-in');
-const brandHTML='<p class="wordmark" translate="no">Flick<span>deck</span></p>';
+const brandHTML='<p class="wordmark" translate="no">Film<span>Stack</span></p>';
 function showGate(view,arg){
   S=hydrate(null);gate.hidden=false;$('#onboard').hidden=true;$('#app').inert=true;if(sheet.open)sheet.close();applyTheme();
   if(!view)view=P.length?'list':'new';
