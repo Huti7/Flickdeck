@@ -1019,14 +1019,17 @@ function art(m){
 }
 
 /* ---------- live data: TMDB (catalogue, posters) and OMDb (IMDb scores) ---------- */
+/* the owner's relay adds the TMDB token on the server, so every device works without a key */
+const RELAY='https://flickdeck-relay.hutaanentezar81.workers.dev/';
 const Live={
-  key:LS.get('fd.tmdb')||'',cache:jget('fd.posters',{}),queue:[],busy:0,dead:false,waiting:{},jobs:{},io:null,saveT:0,
+  key:LS.get('fd.tmdb')||'relay',cache:jget('fd.posters',{}),queue:[],busy:0,dead:false,waiting:{},jobs:{},io:null,saveT:0,
   get on(){return!!this.key&&!this.dead},
   persist(){clearTimeout(this.saveT);this.saveT=setTimeout(()=>LS.set('fd.posters',JSON.stringify(this.cache)),800)},
   req(path,params){
-    const u=new URL('https://api.themoviedb.org/3/'+path);
+    const relay=this.key==='relay',u=new URL((relay?RELAY:'https://api.themoviedb.org/3/')+path);
     for(const k in params)if(params[k]!==undefined&&params[k]!=='')u.searchParams.set(k,params[k]);
     const opt={};
+    if(relay)return fetch(u,opt);
     if(this.key.length>60)opt.headers={Authorization:'Bearer '+this.key};else u.searchParams.set('api_key',this.key);
     return fetch(u,opt);
   },
@@ -1547,7 +1550,7 @@ function renderYou(){
   $('#you-rated').innerHTML=list.length?`<ul class="list">${list.map(m=>row(m,`<span class="row-score" style="color:var(--accent-text)">${S.ratings[m.id]}<small>You</small></span>${scEl(m,'row','span','row-score')}`)).join('')}</ul>`
     :`<div class="empty"><p>No ratings yet. Mark something as seen and give it a score out of 10.</p><a class="btn" href="#library">Browse the Library</a></div>`;
   $('#taste').innerHTML=chipsHTML();
-  $('#tm-k').value=Live.key;$('#om-k').value=Imdb.key;
+  $('#tm-k').value=LS.get('fd.tmdb')||'';$('#om-k').value=Imdb.key;
   Live.scan($('#you-rated'));
 }
 $('#a-g').innerHTML=Object.keys(G).map(g=>`<label class="ck"><input type="checkbox" name="g" value="${g}"><span>${G[g]}</span></label>`).join('');
@@ -1570,14 +1573,14 @@ $('#add').addEventListener('submit',e=>{
 $('#tm').addEventListener('submit',async e=>{
   e.preventDefault();const k=$('#tm-k').value.trim(),st=$('#tm-s'),old=Live.key;
   if(!k){st.textContent='Paste a key first, then save.';$('#tm-k').focus();return}
-  Live.key=k;Live.dead=false;st.textContent='Checking…';
+  Live.key=k;Live.dead=false;st.textContent='Checking…';const old2=old||'relay';
   try{
     const r=await Live.req('configuration',{});
     if(r.ok){LS.set('fd.tmdb',k);Live.jobs={};st.textContent='Connected. The Library and Deck are now live.';S.libSrc='live';deckDirty=true;save();Live.scan()}
-    else{Live.key=old;st.textContent=r.status===401?'TMDB rejected this key. Copy it again from your TMDB account settings.':'TMDB answered with an error. Try again in a minute.'}
-  }catch(err){Live.key=old;st.textContent='TMDB can’t be reached from here. The live catalogue works once the app runs on its own web address.'}
+    else{Live.key=old2;st.textContent=r.status===401?'TMDB rejected this key. Copy it again from your TMDB account settings.':'TMDB answered with an error. Try again in a minute.'}
+  }catch(err){Live.key=old2;st.textContent='TMDB can’t be reached from here. The live catalogue works once the app runs on its own web address.'}
 });
-$('#tm-x').onclick=()=>{Live.key='';Live.cache={};Live.jobs={};LS.del('fd.tmdb');LS.del('fd.posters');$('#tm-k').value='';$$('.art.has-img').forEach(a=>{a.classList.remove('has-img');const i=a.querySelector('img');if(i)i.remove()});deckDirty=true;$('#tm-s').textContent='Key removed. Back to the built-in titles and drawn posters.'};
+$('#tm-x').onclick=()=>{Live.key='relay';Live.dead=false;Live.cache={};Live.jobs={};LS.del('fd.tmdb');LS.del('fd.posters');$('#tm-k').value='';$$('.art.has-img').forEach(a=>{a.classList.remove('has-img');const i=a.querySelector('img');if(i)i.remove()});deckDirty=true;$('#tm-s').textContent='Key removed. The app now uses your relay.'};
 $('#om').addEventListener('submit',async e=>{
   e.preventDefault();const k=$('#om-k').value.trim(),st=$('#om-s');
   if(!k){st.textContent='Paste a key first, then save.';$('#om-k').focus();return}
