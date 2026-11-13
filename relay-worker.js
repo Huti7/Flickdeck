@@ -6,7 +6,7 @@
 //    Needs a Cloudflare D1 database bound to this worker with the variable name DB.
 
 const ALLOWED = ['https://huti7.github.io'];
-const PATHS = /^(configuration|find\/|search\/(movie|tv)|discover\/(movie|tv)|trending\/(movie|tv)\/|(movie|tv)\/\d+\/(external_ids|videos)$|(movie|tv)\/\d+$)/;
+const PATHS = /^(configuration|find\/|search\/(movie|tv|person)|person\/popular$|person\/\d+$|discover\/(movie|tv)|trending\/(movie|tv)\/|(movie|tv)\/\d+\/(external_ids|videos)$|(movie|tv)\/\d+$)/;
 const GENRES = new Set(['Ac', 'Ad', 'An', 'Co', 'Cr', 'Do', 'Dr', 'Fa', 'Fn', 'Hi', 'Ho', 'Mu', 'My', 'Ro', 'Sf', 'Th', 'Wa', 'We']);
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 let ready = false;
